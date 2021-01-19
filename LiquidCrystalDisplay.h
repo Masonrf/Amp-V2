@@ -122,32 +122,29 @@ typedef uint16_t qsize;
 
 #define HEAD  0xaa
 
-typedef struct _QUEUE
-{
-	qsize _head;
+typedef struct _QUEUE {
+    qsize _head;
 	qsize _tail;
 	qdata _data[QUEUE_MAX_SIZE];
 }QUEUE;
 
 
-typedef struct
-{
+typedef struct {
 	uint8_t    cmd_type;
 	uint8_t    control_id;
 	uint8_t    page_id;
 	uint8_t    status;
 	uint8_t    key_type;
-  uint8_t    key_value;
+    uint8_t    key_value;
 }CTRL_MSG,*PCTRL_MSG;
 
-typedef struct
-{
+typedef struct {
 	uint8_t    cmd_type;
 	uint8_t    control_id;
 	uint8_t    page_id;
 	uint8_t    status;
 	uint8_t    key_type;
-  uint8_t    string_length;
+    uint8_t    string_length;
 	uint8_t    param[57];
 }EDIT_MSG,*PEDIT_MSG;
 
