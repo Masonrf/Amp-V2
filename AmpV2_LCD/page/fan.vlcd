@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE vlcd PUBLIC "-//W3C//DTD VLCD 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/VLCD10.dtd">
+<vlcd width="480" height="320">
+<desc>Vlcd picture</desc>
+<image x = "0" y = "0" width = "480" height = "320" ShapeName = ""
+ ShapeNum = "115" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image046.bmp">
+</image>
+<button style = "fill:none; stroke:Black; stroke-width:1" x = "10" y = "10" width = "120" height = "48" ShapeName = "TP" ShapeNum = "25" Direction = "ChangePage" StoreType = "p4" RadianNum = "Char" TextAlignType = "" Gwidth = "image046.bmp" Gheight = "image047.bmp" ></button>
+<circleGauge x = "80" y = "70" width = "330" height = "250" ShapeName = "Yellow" ShapeNum = "26" StoreType = "Local" RadianNum = "270" Direction = "2/6 Width"
+ xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image003.bmp">
+</circleGauge>
+<text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:30pt" x = "150" y = "15" width = "228.2942" height = "50.27343" ShapeName = "Transparent" ShapeNum = "114" >Fan Control</text>
+<slider x = "60" y = "240" width = "360" height = "56" ShapeName = "WhiteSmoke" ShapeNum = "28" Direction = "Horizontal" StoreType = "Local" RadianNum = "0"
+ xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image002.bmp">
+</slider>
+<text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "270" y = "202" width = "23.32118" height = "23.46093" ShapeName = "Transparent" ShapeNum = "116" >%</text>
+<number style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "235" y = "204" width = "16.91363" height = "23.46093" ShapeName = "Color" ShapeNum = "27" RadianNum = "0" >0</number>
+</vlcd>

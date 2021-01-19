@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE vlcd PUBLIC "-//W3C//DTD VLCD 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/VLCD10.dtd">
+<vlcd width="480" height="320">
+<desc>Vlcd picture</desc>
+<image x = "0" y = "0" width = "480" height = "320" ShapeName = ""
+ ShapeNum = "109" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image044.bmp">
+</image>
+<button style = "fill:none; stroke:Black; stroke-width:1" x = "274" y = "150" width = "140" height = "140" ShapeName = "TP" ShapeNum = "20" Direction = "UploadID" StoreType = "" RadianNum = "Char" TextAlignType = "" Gwidth = "image044.bmp" Gheight = "image045.bmp" >Button</button>
+<button style = "fill:none; stroke:Black; stroke-width:1" x = "66" y = "150" width = "140" height = "140" ShapeName = "TP" ShapeNum = "19" Direction = "UploadID" StoreType = "" RadianNum = "Char" TextAlignType = "" Gwidth = "image044.bmp" Gheight = "image045.bmp" >Button</button>
+<button style = "fill:none; stroke:Black; stroke-width:1" x = "10" y = "10" width = "120" height = "48" ShapeName = "TP" ShapeNum = "15" Direction = "ChangePage" StoreType = "p4" RadianNum = "Char" TextAlignType = "" Gwidth = "image044.bmp" Gheight = "image045.bmp" ></button>
+<progress x = "66" y = "90" width = "140" height = "40" ShapeName = "14" StoreType = "Image" ShapeNum = "16" RadianNum = "image017.bmp"
+ xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image018.bmp">
+</progress>
+<progress x = "274" y = "90" width = "140" height = "40" ShapeName = "14" StoreType = "Image" ShapeNum = "17" RadianNum = "image017.bmp"
+ xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image018.bmp">
+</progress>
+<text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:30pt" x = "161" y = "15" width = "157.6106" height = "50.27343" ShapeName = "Transparent" ShapeNum = "108" >Outputs</text>
+</vlcd>
