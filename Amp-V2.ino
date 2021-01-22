@@ -1,11 +1,12 @@
 #include "AmpControl.h"
-#include "LiquidCrystalDisplay.h"
+#include "AmpDisplay.h"
 
+AmpDisplay Touchscreen;
 
 void setup() {
-    
+
 }
 
 void loop() {
-
+    Touchscreen.refreshDisplay();
 }

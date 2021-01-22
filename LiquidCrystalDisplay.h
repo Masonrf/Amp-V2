@@ -13,6 +13,11 @@
 		used for I2C
 	* Removed the _int_pin variable since it wasn't used anywhere
 	* Removed duplicate definitions
+    * Cleaned up some formatting
+
+    The purpose of this library is more oriented toward how the display handles lower level
+    functions and interrupts. These functions will not change no matter what custom
+    UI is made for the display.
 */
 
 #ifndef LiquidCrystalDisplay_h

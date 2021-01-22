@@ -13,6 +13,11 @@
 		used for I2C
 	* Removed the _int_pin variable since it wasn't used anywhere
 	* Removed duplicate definitions
+    * Cleaned up some formatting
+
+    The purpose of this library is more oriented toward how the display handles lower level
+    functions and interrupts. These functions will not change no matter what custom
+    UI is made for the display.
 */
 
 #include "LiquidCrystalDisplay.h"
@@ -47,7 +52,7 @@ uint8_t LiquidCrystal::I2C_Read(void) {
 	while(Wire.available()) {
 		_data = Wire.read();
 	}
-   return _data;
+    return _data;
 }
 
 void LiquidCrystal::I2C_ISR() {
@@ -466,9 +471,9 @@ uint8_t LiquidCrystal::queue_find_cmd(qdata *buffer,qsize buf_len) {
 		//get 1 data
 		queue_pop(&_data);
 
-		if(cmd_pos == 0 &&_data != NOTIFY_TOUCH_BUTTON && _data !=  NOTIFY_TOUCH_CHECKBOX &&_data != NOTIFY_TOUCH_SLIDER
-		    && _data !=  NOTIFY_GET_EDIT &&_data != NOTIFY_GET_PAGE && _data !=  NOTIFY_GET_CHECKBOX && _data != NOTIFY_GET_SLIDER
-		    && _data != NOTIFY_TOUCH_EDIT &&_data != NOTIFY_GET_TOUCH_EDIT)
+		if(cmd_pos == 0 &&_data != BUTTON && _data != CHECKBOX_SEND && _data != SLIDER
+		    && _data != GET_EDIT_VALUE &&_data != GET_PAGE_ID && _data != GET_CHECKBOX_VALUE && _data != GET_SLIDER_VALUE
+		    && _data != TOUCH_EDIT_SEND_VALUE &&_data != GET_TOUCH_EDIT_VALUE)
 		    continue;
 
 		if(cmd_pos < buf_len) {
@@ -477,7 +482,7 @@ uint8_t LiquidCrystal::queue_find_cmd(qdata *buffer,qsize buf_len) {
 			}
 
 			if(cmd_pos == (CMD_DATA_LENGTH - 1)) {
-				if(cmd_backup == NOTIFY_GET_EDIT || cmd_backup == NOTIFY_GET_TOUCH_EDIT) {
+				if(cmd_backup == GET_EDIT_VALUE || cmd_backup == GET_TOUCH_EDIT_VALUE) {
 			 		cmd_length = CMD_DATA_LENGTH + _data - 1;
                 }
 			}
