@@ -50,11 +50,11 @@
 class AmpDisplay: public LiquidCrystal {
 public:
     AmpDisplay();
+    //LiquidCrystal TFTlcd(uint8_t isrPin);
 
     void refreshDisplay();
 
 private:
-    LiquidCrystal TFTlcd;
     elapsedMillis displayRefreshTimer;
 
     uint8_t   cmd_buffer[CMD_MAX_SIZE];

@@ -3,16 +3,16 @@
 <vlcd width="480" height="320">
 <desc>Vlcd picture</desc>
 <image x = "0" y = "0" width = "480" height = "320" ShapeName = ""
- ShapeNum = "111" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image046.bmp">
+ ShapeNum = "111" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\Amp-V2\AmpV2_LCD\image\image046.bmp">
 </image>
-<button style = "fill:none; stroke:Black; stroke-width:1" x = "10" y = "10" width = "120" height = "48" ShapeName = "TP" ShapeNum = "22" Direction = "ChangePage" StoreType = "p4" RadianNum = "Char" TextAlignType = "" Gwidth = "image046.bmp" Gheight = "image047.bmp" ></button>
+<button style = "fill:none; stroke:Black; stroke-width:1" x = "10" y = "10" width = "120" height = "48" ShapeName = "TP" ShapeNum = "1" Direction = "ChangePage" StoreType = "p4" RadianNum = "Char" TextAlignType = "" Gwidth = "image046.bmp" Gheight = "image047.bmp" ></button>
 <image x = "329" y = "10" width = "140" height = "48" ShapeName = ""
- ShapeNum = "113" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image006.bmp">
+ ShapeNum = "113" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\Amp-V2\AmpV2_LCD\image\image006.bmp">
 </image>
 <text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:30pt" x = "196" y = "10" width = "88.86066" height = "50.27343" ShapeName = "Transparent" ShapeNum = "110" >FFT</text>
-<check style = "fill:none; stroke:Black; stroke-width:1" x = "349" y = "18" width = "40.16232" height = "33.51562" ShapeName = "20" ShapeNum = "23" StoreType = "Local" >L</check>
-<check style = "fill:none; stroke:Black; stroke-width:1" x = "410" y = "18" width = "44.71961" height = "33.51562" ShapeName = "20" ShapeNum = "24" StoreType = "Local" >R</check>
+<check style = "fill:none; stroke:Black; stroke-width:1" x = "349" y = "18" width = "40.16232" height = "33.51562" ShapeName = "20" ShapeNum = "2" StoreType = "Local" >L</check>
+<check style = "fill:none; stroke:Black; stroke-width:1" x = "410" y = "18" width = "44.71961" height = "33.51562" ShapeName = "20" ShapeNum = "3" StoreType = "Local" >R</check>
 <image x = "10" y = "70" width = "460" height = "240" ShapeName = ""
- ShapeNum = "112" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\AmpV2_LCD\image\image001.bmp">
+ ShapeNum = "112" xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\Amp-V2\AmpV2_LCD\image\image001.bmp">
 </image>
 </vlcd>

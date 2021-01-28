@@ -1,17 +1,16 @@
 #include "AmpDisplay.h"
-
-AmpDisplay::AmpDisplay() : TFTlcd(LCD_INT_PIN) {
+//
+AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN){
     update_en = 1;
     data_size = 0;
-
-    TFTlcd.SetPage(MAIN_PAGE);
+    LiquidCrystal::SetPage(MAIN_PAGE);
     current_page = MAIN_PAGE;
 }
 
 void AmpDisplay::UpdateUI() {
     switch(current_page) {
         case MAIN_PAGE:
-            TFTlcd.SetProgressbarValue(MAIN_PAGE, HOME_CLIP_INDICATOR, 100); // Just a test
+            LiquidCrystal::SetProgressbarValue(MAIN_PAGE, HOME_CLIP_INDICATOR, 100); // Just a test
             break;
 
         default:
@@ -23,7 +22,7 @@ void AmpDisplay::refreshDisplay() {
     if(displayRefreshTimer >= 1000 / REFRESH_RATE) { // Get number of milliseconds per frame
         displayRefreshTimer -= 1000 / REFRESH_RATE;  // who cares about precise refresh timings anyways
 
-        data_size = TFTlcd.check_for_cmd(cmd_buffer);
+        data_size = LiquidCrystal::check_for_cmd(cmd_buffer);
         if(data_size > 0) { // recieved a command
             //Serial.println(data_size, HEX);
             //Serial.println(F("ProcessMessage"));
@@ -105,7 +104,7 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
 
         case ENTER:
             if(state == KEY_RELEASE) {
-                TFTlcd.GetEditValue(page_id,value); // I think this is old/from example
+                LiquidCrystal::GetEditValue(page_id,value); // I think this is old/from example
             }
             break;
 
@@ -128,11 +127,11 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     // one of type UPLOAD_CONTROL_ID on this page
                     if(control_id == HOME_RESET_BTN) {
                         if(fault == 0) {
-                            TFTlcd.SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,100);
+                            LiquidCrystal::SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,100);
                             fault = 1;
                         }
                         else {
-                            TFTlcd.SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,0);
+                            LiquidCrystal::SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,0);
                             fault = 0;
                         }
                     }
@@ -161,13 +160,13 @@ void AmpDisplay::NotifyTouchCheckbox(uint8_t page_id, uint8_t control_id, uint8_
 
 void AmpDisplay::NotifyTouchSlider(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
     if(update_en != 1) {
-        TFTlcd.SetNumberValue(page_id,28,(uint16_t)value);
+        LiquidCrystal::SetNumberValue(page_id,28,(uint16_t)value);
     }
 }
 
 void AmpDisplay::NotifyTouchEdit(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
     if(update_en != 1) {
-        TFTlcd.GetTouchEditValue(page_id,control_id);
+        LiquidCrystal::GetTouchEditValue(page_id,control_id);
     }
 }
 
@@ -184,11 +183,11 @@ void AmpDisplay::NotifyGetEdit(PEDIT_MSG msg) {
   //The test passward number 1 2 3 4,ASCII code is 0x31 0x32 0x33 0x34
   if(msg->param[0] == 0x31 && msg->param[1] == 0x32 && msg->param[2] == 0x33 && msg->param[3] == 0x34)
   {
-    TFTlcd.Display_Message(0X18,2,(unsigned char *)String01);
+    LiquidCrystal::Display_Message(0X18,2,(unsigned char *)String01);
   }
   else
   {
-    TFTlcd.Display_Message(0X18,2,(unsigned char *)String02);
+    LiquidCrystal::Display_Message(0X18,2,(unsigned char *)String02);
   }
   */
 }
@@ -205,11 +204,11 @@ void AmpDisplay::NotifyGetTouchEdit(PEDIT_MSG msg) {
   //The test passward number 1 2 3 4,ASCII code is 0x31 0x32 0x33 0x34
   if(msg->param[0] == 0x31 && msg->param[1] == 0x32 && msg->param[2] == 0x33 && msg->param[3] == 0x34)
   {
-    TFTlcd.Display_Message(0X18,2,(unsigned char *)String04);
+    LiquidCrystal::Display_Message(0X18,2,(unsigned char *)String04);
   }
   else
   {
-    TFTlcd.Display_Message(0X18,2,(unsigned char *)String05);
+    LiquidCrystal::Display_Message(0X18,2,(unsigned char *)String05);
   }
   */
 }
