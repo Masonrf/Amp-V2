@@ -154,7 +154,7 @@ typedef struct {
 }EDIT_MSG,*PEDIT_MSG;
 
 class LiquidCrystal : public Print {
-public:
+protected:
 
 	LiquidCrystal(uint8_t isrPin);
 
