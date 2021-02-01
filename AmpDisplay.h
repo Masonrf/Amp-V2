@@ -24,9 +24,9 @@
 
 #define INPUT_BACK_BTN          1
 #define INPUT_SE_INDICATOR      2
-#define INPUT_BAL_INDICATOR     3
+#define INPUT_DIFF_INDICATOR    3
 #define INPUT_SE_BTN            4
-#define INPUT_BAL_BTN           5
+#define INPUT_DIFF_BTN          5
 
 #define OUTPUT_BACK_BTN          1
 #define OUTPUT_POST_INDICATOR    2
@@ -47,7 +47,7 @@
 #define REFRESH_RATE 30
 
 // Inherits public items from LiquidCrystal library
-class AmpDisplay: public LiquidCrystal {
+class AmpDisplay: public LiquidCrystal, public AmpControl {
 public:
     AmpDisplay();
     //LiquidCrystal TFTlcd(uint8_t isrPin);
@@ -61,7 +61,6 @@ private:
     uint8_t   data_size;
     uint8_t   update_en;
     uint8_t   current_page;
-    uint8_t   fault = 0; // this needs to be moved to AmpControl
 
     void ProcessMessage(PCTRL_MSG msg, uint16_t dataSize);
 

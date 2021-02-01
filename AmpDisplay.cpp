@@ -1,6 +1,6 @@
 #include "AmpDisplay.h"
 //
-AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN){
+AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl() {
     update_en = 1;
     data_size = 0;
     SetPage(MAIN_PAGE);
@@ -13,6 +13,23 @@ void AmpDisplay::UpdateUI() {
             SetProgressbarValue(MAIN_PAGE, HOME_CLIP_INDICATOR, 100); // Just a test
             break;
 
+        case INPUTS_PAGE:
+            if(input == 1) {
+                SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 100);
+            }
+            else {
+                SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 100);
+            }
+            break;
+
+        case OUTPUTS_PAGE:
+            if(output == 1) {
+                SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 100);
+            }
+            else {
+                SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 100);
+            }
+            break;
         default:
             break;
     }
@@ -32,7 +49,7 @@ void AmpDisplay::refreshDisplay() {
         if(update_en) {
             //Serial.println(F("UpdateUI"));
             update_en = 0;
-            delay(100); // get rid of the delay or replace with a timer
+            //delay(100); // get rid of the delay or replace with a timer
             UpdateUI();
         }
     }
@@ -120,6 +137,16 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     break;
 
                 case INPUTS_PAGE:
+                    if(control_id == INPUT_SE_BTN && input == 1) {
+                        toggleRelay(&input);
+                        SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 100);
+                        SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 0);
+                    }
+                    else if(control_id == INPUT_DIFF_BTN && input == 0) {
+                        toggleRelay(&input);
+                        SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 0);
+                        SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 100);
+                    }
                     break;
 
                 case MAIN_PAGE:
@@ -136,6 +163,16 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                         }
                     }
                 case OUTPUTS_PAGE:
+                    if(control_id == OUTPUT_SPEAKON_BTN && output == 1) {
+                        toggleRelay(&output);
+                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 100);
+                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 0);
+                    }
+                    else if(control_id == OUTPUT_POST_BTN && output == 0) {
+                        toggleRelay(&output);
+                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 0);
+                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 100);
+                    }
                     break;
 
                 default:
