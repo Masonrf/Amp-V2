@@ -5,7 +5,7 @@
 AmpControl::AmpControl() {
 //    amp = this;
 
-//    pinMode(FAULT_PIN, INPUT_PULLUP);
+    //pinMode(FAULT_PIN, INPUT_PULLUP);
 //    pinMode(CLIP_PIN, INPUT_PULLUP);
 //    attachInterrupt(digitalPinToInterrupt(FAULT_PIN), AmpControl::faultISR, LOW);
 //    attachInterrupt(digitalPinToInterrupt(CLIP_PIN), AmpControl::clipISR, LOW);
@@ -96,5 +96,9 @@ void AmpControl::clipISRWork() {
 */
 
 void AmpControl::toggleBool(boolean *toggle) {
+    *toggle = !(*toggle);
+}
+
+void AmpControl::toggleBool(volatile boolean *toggle) {
     *toggle = !(*toggle);
 }

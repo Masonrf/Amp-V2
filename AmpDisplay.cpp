@@ -6,8 +6,7 @@ AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl() {
     SetPage(MAIN_PAGE);
     current_page = MAIN_PAGE;
 
-
-    fault = 1; // for testing
+    //fault = 1; // for testing
 }
 
 void AmpDisplay::UpdateUI() {

@@ -38,16 +38,19 @@ public:
     void startReset();
     void endReset();
 
-private:
-//    static AmpControl *amp;
+    //void faultISRWork();
 
-//    static void faultISR();
-//    void faultISRWork();
+private:
+    //static AmpControl *amp;
+
+    //static void faultISR();
+
 
 //    static void clipISR();
 //    void clipISRWork();
 
     void toggleBool(boolean *toggle);
+    void toggleBool(volatile boolean *toggle);
 };
 
 #endif
