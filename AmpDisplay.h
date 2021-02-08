@@ -44,13 +44,12 @@
 #define FAN_SPEED_SLIDER        4
 
 // Refresh rate in frames per second
-#define REFRESH_RATE 30
+#define MAX_REFRESH_RATE 30
 
 // Inherits public items from LiquidCrystal library
 class AmpDisplay: public LiquidCrystal, public AmpControl {
 public:
     AmpDisplay();
-    //LiquidCrystal TFTlcd(uint8_t isrPin);
 
     void refreshDisplay();
 

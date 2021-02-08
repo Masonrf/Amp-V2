@@ -11,7 +11,7 @@
 #define CLIP_PIN      0
 #define FAULT_PIN     1
 #define RESET_PIN     2
-#define PWM_PIN       3
+#define FAN_PWM_PIN   3
 #define TACH_PIN      4
 #define IN_RELAY_PIN  5
 #define OUT_RELAY_PIN 6
@@ -20,6 +20,7 @@
 #define LCD_INT_PIN   20
 
 #define RESET_DELAY   100
+#define FAN_PWM_FREQ  25000
 
 
 class AmpControl {
@@ -34,23 +35,15 @@ public:
 
     boolean updateCtrl;     // Tell the display to update
 
+    uint8_t fanDutyCycle;
+
     void toggleRelay(boolean *toggle);
     void startReset();
     void endReset();
 
-    //void faultISRWork();
-
 private:
-    //static AmpControl *amp;
-
-    //static void faultISR();
-
-
-//    static void clipISR();
-//    void clipISRWork();
-
     void toggleBool(boolean *toggle);
-    void toggleBool(volatile boolean *toggle);
+
 };
 
 #endif

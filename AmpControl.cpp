@@ -1,14 +1,6 @@
 #include "AmpControl.h"
 
-//AmpControl *AmpControl::amp = 0;
-
 AmpControl::AmpControl() {
-//    amp = this;
-
-    //pinMode(FAULT_PIN, INPUT_PULLUP);
-//    pinMode(CLIP_PIN, INPUT_PULLUP);
-//    attachInterrupt(digitalPinToInterrupt(FAULT_PIN), AmpControl::faultISR, LOW);
-//    attachInterrupt(digitalPinToInterrupt(CLIP_PIN), AmpControl::clipISR, LOW);
 
     pinMode(IN_RELAY_PIN, OUTPUT);
     input = 0;
@@ -20,6 +12,11 @@ AmpControl::AmpControl() {
 
     pinMode(RESET_PIN, OUTPUT);
     digitalWrite(RESET_PIN, HIGH);
+
+    pinMode(FAN_PWM_PIN, OUTPUT);
+    analogWriteFrequency(FAN_PWM_PIN, FAN_PWM_FREQ);
+    fanDutyCycle = 128;
+    analogWrite(FAN_PWM_PIN, fanDutyCycle);
 
     updateCtrl = 1;
 }
@@ -71,34 +68,7 @@ void AmpControl::endReset() {
 //////////////////////////////////////////////
 // Private
 //////////////////////////////////////////////
-/*
-void AmpControl::faultISR() {
-    if(amp != 0) {
-        amp->faultISRWork();
-    }
-}
-
-void AmpControl::faultISRWork() {
-    toggleBool(&fault);
-    updateCtrl = 1;
-}
-
-void AmpControl::clipISR() {
-    if(amp != 0) {
-        amp->clipISRWork();
-    }
-}
-
-void AmpControl::clipISRWork() {
-    toggleBool(&clip);
-    updateCtrl = 1;
-}
-*/
 
 void AmpControl::toggleBool(boolean *toggle) {
-    *toggle = !(*toggle);
-}
-
-void AmpControl::toggleBool(volatile boolean *toggle) {
     *toggle = !(*toggle);
 }

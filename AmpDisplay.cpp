@@ -1,12 +1,10 @@
 #include "AmpDisplay.h"
-//
+
 AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl() {
     update_en = 1;
     data_size = 0;
     SetPage(MAIN_PAGE);
     current_page = MAIN_PAGE;
-
-    //fault = 1; // for testing
 }
 
 void AmpDisplay::UpdateUI() {
@@ -23,14 +21,24 @@ void AmpDisplay::UpdateUI() {
         case OUTPUTS_PAGE:
             setIndicator(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, OUTPUT_SPEAKON_INDICATOR, output);
             break;
+
+        case FAN_PAGE:
+            SetCircleGaugeValue(FAN_PAGE, FAN_DIAL_GUAGE, map(fanDutyCycle, 0, 255, 0, 180));
+            SetSliderValue(FAN_PAGE, FAN_SPEED_SLIDER, map(fanDutyCycle, 0, 255, 0, 100));
+            //SetNumberValue(FAN_PAGE, FAN_NUMERICAL_DISPLAY, fanDutyCycle);
+            break;
+
         default:
             break;
     }
 }
 
+// Tries to check for any commands in the queue and updates the display if necessary
+// There's a limit on how often the MCU can update the display so that the MCU
+// isn't constantly checking for updates and eating up cycles
 void AmpDisplay::refreshDisplay() {
-    if(displayRefreshTimer >= 1000 / REFRESH_RATE) { // Get number of milliseconds per frame
-        displayRefreshTimer -= 1000 / REFRESH_RATE;  // who cares about precise refresh timings anyways
+    if(displayRefreshTimer >= 1000 / MAX_REFRESH_RATE) { // Get max number of milliseconds per frame
+        displayRefreshTimer -= 1000 / MAX_REFRESH_RATE;
 
         data_size = check_for_cmd(cmd_buffer);
         if(data_size > 0) { // recieved a command
@@ -102,10 +110,8 @@ void AmpDisplay::ProcessMessage(PCTRL_MSG msg, uint16_t dataSize) {
   }
 }
 
-// Everything below is a "I have no fucking clue if all of it works for sure"
-// and is mostly incomplete
-
-void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
+// Display notifying the MCU that a button has been touched
+void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
     switch(type) {
         case CHANGE_PAGE:
             current_page = value;
@@ -167,19 +173,26 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
     }
 }
 
-void AmpDisplay::NotifyTouchCheckbox(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
+// Display notifying the MCU that a checkbox has been touched
+void AmpDisplay::NotifyTouchCheckbox(uint8_t page_id, uint8_t control_id, uint8_t state,uint8_t type, uint8_t value) {
     if(state == SELECT) {
         update_en = 1;
     }
 }
 
-void AmpDisplay::NotifyTouchSlider(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
-    if(update_en != 1) {
-        SetNumberValue(page_id,28,(uint16_t)value);
+// Display notifying the MCU that a slider has been touched
+void AmpDisplay::NotifyTouchSlider(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
+    if(page_id == FAN_PAGE) {
+        // value is in the range 0-100 so here's getting it into analogWrite duty cycle 0-255
+        value = map(value, 0, 100, 0, 255);
+        fanDutyCycle = value;
+        analogWrite(FAN_PWM_PIN, fanDutyCycle);
+        update_en = 1;
     }
 }
 
-void AmpDisplay::NotifyTouchEdit(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
+// Display notifying the MCU that an edit box has been touched
+void AmpDisplay::NotifyTouchEdit(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
     if(update_en != 1) {
         GetTouchEditValue(page_id,control_id);
     }
@@ -228,20 +241,22 @@ void AmpDisplay::NotifyGetTouchEdit(PEDIT_MSG msg) {
   */
 }
 
+// Read current page off of the display
 void AmpDisplay::NotifyGetPage(uint8_t page_id,uint8_t status) {
     if(status == SUCCESS) {
         current_page = page_id;
     }
 }
 
-
-void AmpDisplay::NotifyGetCheckbox(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
+// Read current checkbox value off the display
+void AmpDisplay::NotifyGetCheckbox(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
     if(state == SELECT) {
         update_en = 1;
     }
 }
 
-void AmpDisplay::NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value) {
+// Read current slider value off the display
+void AmpDisplay::NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
     if(state == SUCCESS) {
         //success get value
     }
