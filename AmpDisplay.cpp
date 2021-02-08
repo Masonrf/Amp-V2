@@ -141,7 +141,9 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     // Check to make sure its the right button even though there's only
                     // one of type UPLOAD_CONTROL_ID on this page
                     if(control_id == HOME_RESET_BTN) {
-                    //    resetAmp(1);
+                        startReset();
+                        delay(500);
+                        endReset();
                     }
                     break;
 

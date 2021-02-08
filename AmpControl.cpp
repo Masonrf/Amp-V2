@@ -1,11 +1,12 @@
 #include "AmpControl.h"
-#include <TimeLib.h>
-#include <TimeAlarms.h>
 
 //AmpControl *AmpControl::amp = 0;
 
 AmpControl::AmpControl() {
 //    amp = this;
+
+//    pinMode(FAULT_PIN, INPUT_PULLUP);
+//    pinMode(CLIP_PIN, INPUT_PULLUP);
 //    attachInterrupt(digitalPinToInterrupt(FAULT_PIN), AmpControl::faultISR, LOW);
 //    attachInterrupt(digitalPinToInterrupt(CLIP_PIN), AmpControl::clipISR, LOW);
 
@@ -17,10 +18,16 @@ AmpControl::AmpControl() {
     output = 0;
     digitalWrite(OUT_RELAY_PIN, LOW);
 
+    pinMode(RESET_PIN, OUTPUT);
+    digitalWrite(RESET_PIN, HIGH);
+
     updateCtrl = 1;
 }
 
 void AmpControl::toggleRelay(boolean *toggle) {
+    // A disabling the amp is necessary to prevent popping when switching the relays
+    startReset();
+
     if(toggle == &input) { // If passed the input boolean, ...
         if(*toggle) {
             digitalWrite(IN_RELAY_PIN, LOW); // Switch to 3.5mm
@@ -39,15 +46,28 @@ void AmpControl::toggleRelay(boolean *toggle) {
     }
 
     toggleBool(toggle);  // Switch the boolean
+
+    endReset();
 }
 
-/*
-void AmpControl::resetAmp(uint8_t resetLengthSeconds) {
+void AmpControl::startReset() {
+    if(reset) {
+        return;
+    }
+    reset = 1;
     digitalWrite(RESET_PIN, LOW);
-    Alarm.timerOnce(resetLengthSeconds, endReset);
-    Alarm.delay(100); // 100ms delay to allow the amp to go into a reset state
+    delay(RESET_DELAY);
 }
-*/
+
+void AmpControl::endReset() {
+    if(!reset) {
+        return;
+    }
+    digitalWrite(RESET_PIN, HIGH);
+    delay(RESET_DELAY / 2);
+    reset = 0;
+}
+
 //////////////////////////////////////////////
 // Private
 //////////////////////////////////////////////
@@ -78,8 +98,3 @@ void AmpControl::clipISRWork() {
 void AmpControl::toggleBool(boolean *toggle) {
     *toggle = !(*toggle);
 }
-/*
-void AmpControl::endReset() {
-    digitalWrite(RESET_PIN, HIGH);
-    Alarm.delay(100); // 100ms delay to allow the amp to go into a normal state
-}*/

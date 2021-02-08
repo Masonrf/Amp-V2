@@ -19,6 +19,8 @@
 #define ADC_R_PIN     15
 #define LCD_INT_PIN   20
 
+#define RESET_DELAY   100
+
 
 class AmpControl {
 public:
@@ -28,11 +30,13 @@ public:
     volatile boolean clip;   // 0 == no clip,     1 == clipping
     boolean input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
     boolean output;          // 0 == SpeakOns,    1 == Posts
+    boolean reset;
 
     boolean updateCtrl;     // Tell the display to update
 
     void toggleRelay(boolean *toggle);
-//    void resetAmp(uint8_t resetLengthSeconds);
+    void startReset();
+    void endReset();
 
 private:
 //    static AmpControl *amp;
@@ -44,7 +48,6 @@ private:
 //    void clipISRWork();
 
     void toggleBool(boolean *toggle);
-//    static void endReset();
 };
 
 #endif
