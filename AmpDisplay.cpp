@@ -5,30 +5,24 @@ AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl() {
     data_size = 0;
     SetPage(MAIN_PAGE);
     current_page = MAIN_PAGE;
+
+
+    fault = 1; // for testing
 }
 
 void AmpDisplay::UpdateUI() {
     switch(current_page) {
         case MAIN_PAGE:
-            SetProgressbarValue(MAIN_PAGE, HOME_CLIP_INDICATOR, 100); // Just a test
+            setIndicator(MAIN_PAGE, HOME_CLIP_INDICATOR, clip);
+            setIndicator(MAIN_PAGE, HOME_FAULT_INDICATOR, fault);
             break;
 
         case INPUTS_PAGE:
-            if(input == 1) {
-                SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 100);
-            }
-            else {
-                SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 100);
-            }
+            setIndicator(INPUTS_PAGE, INPUT_DIFF_INDICATOR, INPUT_SE_INDICATOR, input);
             break;
 
         case OUTPUTS_PAGE:
-            if(output == 1) {
-                SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 100);
-            }
-            else {
-                SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 100);
-            }
+            setIndicator(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, OUTPUT_SPEAKON_INDICATOR, output);
             break;
         default:
             break;
@@ -46,10 +40,10 @@ void AmpDisplay::refreshDisplay() {
             ProcessMessage((PCTRL_MSG)cmd_buffer, data_size);//command process
         }
 
-        if(update_en) {
+        if(update_en || updateCtrl) {
             //Serial.println(F("UpdateUI"));
+            updateCtrl = 0;
             update_en = 0;
-            //delay(100); // get rid of the delay or replace with a timer
             UpdateUI();
         }
     }
@@ -57,7 +51,7 @@ void AmpDisplay::refreshDisplay() {
 
 //////////////////////////////////////////////
 // Private
-/////////////////////////////////////////////
+//////////////////////////////////////////////
 
 void AmpDisplay::ProcessMessage(PCTRL_MSG msg, uint16_t dataSize) {
     uint8_t cmd_type    = msg->cmd_type;
@@ -136,16 +130,10 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                 case FFT_PAGE:
                     break;
 
-                case INPUTS_PAGE:
-                    if(control_id == INPUT_SE_BTN && input == 1) {
+                case INPUTS_PAGE: // hmm maybe change else if to an else to improve perf? basically copy mainpage to input and output
+                    if((control_id == INPUT_SE_BTN && input) || (control_id == INPUT_DIFF_BTN && !input)) {
+                        update_en = 1;
                         toggleRelay(&input);
-                        SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 100);
-                        SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 0);
-                    }
-                    else if(control_id == INPUT_DIFF_BTN && input == 0) {
-                        toggleRelay(&input);
-                        SetProgressbarValue(INPUTS_PAGE, INPUT_SE_INDICATOR, 0);
-                        SetProgressbarValue(INPUTS_PAGE, INPUT_DIFF_INDICATOR, 100);
                     }
                     break;
 
@@ -153,25 +141,14 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     // Check to make sure its the right button even though there's only
                     // one of type UPLOAD_CONTROL_ID on this page
                     if(control_id == HOME_RESET_BTN) {
-                        if(fault == 0) {
-                            SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,100);
-                            fault = 1;
-                        }
-                        else {
-                            SetProgressbarValue(MAIN_PAGE,HOME_FAULT_INDICATOR,0);
-                            fault = 0;
-                        }
+                    //    resetAmp(1);
                     }
+                    break;
+
                 case OUTPUTS_PAGE:
-                    if(control_id == OUTPUT_SPEAKON_BTN && output == 1) {
+                    if((control_id == OUTPUT_SPEAKON_BTN && output) || (control_id == OUTPUT_POST_BTN && !output)) {
+                        update_en = 1;
                         toggleRelay(&output);
-                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 100);
-                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 0);
-                    }
-                    else if(control_id == OUTPUT_POST_BTN && output == 0) {
-                        toggleRelay(&output);
-                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_SPEAKON_INDICATOR, 0);
-                        SetProgressbarValue(OUTPUTS_PAGE, OUTPUT_POST_INDICATOR, 100);
                     }
                     break;
 
@@ -268,4 +245,24 @@ void AmpDisplay::NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t  s
         //success get value
     }
     update_en = 1;
+}
+
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indicatorVar) {
+    if(indicatorVar) {
+        SetProgressbarValue(pageID, indicatorID, 100);
+    }
+    else {
+        SetProgressbarValue(pageID, indicatorID, 0);
+    }
+}
+
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, boolean indicatorVar) {
+    if(indicatorVar) {
+        SetProgressbarValue(pageID, indicatorIdTrue, 100);
+        SetProgressbarValue(pageID, indicatorIdFalse, 0);
+    }
+    else {
+        SetProgressbarValue(pageID, indicatorIdTrue, 0);
+        SetProgressbarValue(pageID, indicatorIdFalse, 100);
+    }
 }

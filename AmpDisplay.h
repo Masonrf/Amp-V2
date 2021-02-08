@@ -76,6 +76,8 @@ private:
     void NotifyGetCheckbox(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value);
     void NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value);
 
+    void setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indicatorVar);
+    void setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, boolean indicatorVar);
 };
 
 #endif

@@ -24,15 +24,27 @@ class AmpControl {
 public:
     AmpControl();
 
-    boolean fault;
-    boolean clip;
-    boolean input;  // 0 == 3.5mm (SE), 1 == XLR (Diff)
-    boolean output; // 0 == SpeakOns, 1 == Posts
+    volatile boolean fault;  // 0 == no fault,    1 == fault
+    volatile boolean clip;   // 0 == no clip,     1 == clipping
+    boolean input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
+    boolean output;          // 0 == SpeakOns,    1 == Posts
+
+    boolean updateCtrl;     // Tell the display to update
 
     void toggleRelay(boolean *toggle);
+//    void resetAmp(uint8_t resetLengthSeconds);
 
 private:
+//    static AmpControl *amp;
 
+//    static void faultISR();
+//    void faultISRWork();
+
+//    static void clipISR();
+//    void clipISRWork();
+
+    void toggleBool(boolean *toggle);
+//    static void endReset();
 };
 
 #endif
