@@ -114,6 +114,19 @@ void AmpDisplay::ProcessMessage(PCTRL_MSG msg, uint16_t dataSize) {
 void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t state, uint8_t type, uint8_t value) {
     switch(type) {
         case CHANGE_PAGE:
+            if(value == FAN_PAGE) { // Changing to fan page
+                //attach interrupt
+            }
+            else if(current_page == FAN_PAGE){ // Changing from fan page to another page
+                // check its not detached & detach
+
+                /* I have the MCU to write to EEPROM whenever it switches off the fan page
+                 * in order to keep number of writes to a minimum. In the future, it
+                 *  may be better to just set a timer to detect if its been awhile since
+                 * the fanDutyCycle has been updated
+                 */
+                EEPROM.put(EEPROM_BASE_ADDR + EEPROM_FAN_ADDR, fanDutyCycle);
+            }
             current_page = value;
             update_en = 1;
             break;

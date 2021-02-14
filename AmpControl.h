@@ -6,6 +6,7 @@
 #define AmpControl_h
 
 #include "Arduino.h"
+#include <EEPROM.h>
 
 // PINs
 #define CLIP_PIN      0
@@ -19,8 +20,19 @@
 #define ADC_R_PIN     15
 #define LCD_INT_PIN   20
 
-#define RESET_DELAY   100
-#define FAN_PWM_FREQ  25000
+#define RESET_DELAY   100    // Time in ms to hold the reset pin low
+#define FAN_PWM_FREQ  25000  // PWM frequncy in Hz
+
+/* These EEPROMs are rated for >100k writes per address. Realistically, you probably
+ * won't wear them out to the point of failure any time soon. However, you can adjust
+ * the base address to move the block of stored data elsewhere.
+ */
+#define EEPROM_BASE_ADDR   0
+#define EEPROM_MAX_ADDR    1079  // Teensy 4.0 has 1080 bytes of EEPROM
+// Starting addresses for each var
+#define EEPROM_INPUT_ADDR  0
+#define EEPROM_OUTPUT_ADDR 1
+#define EEPROM_FAN_ADDR    2
 
 
 class AmpControl {
@@ -42,8 +54,11 @@ public:
     void endReset();
 
 private:
-    void toggleBool(boolean *toggle);
+    uint8_t tempByte;
 
+    void toggleBool(boolean *toggle);
+    uint8_t boolToByte(boolean inputBool);
+    boolean byteToBool(uint8_t inputByte);
 };
 
 #endif
