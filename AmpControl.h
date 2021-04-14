@@ -16,8 +16,6 @@
 #define TACH_PIN      4
 #define IN_RELAY_PIN  5
 #define OUT_RELAY_PIN 6
-#define ADC_L_PIN     14
-#define ADC_R_PIN     15
 #define LCD_INT_PIN   20
 
 #define RESET_DELAY   100    // Time in ms to hold the reset pin low
