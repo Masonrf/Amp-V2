@@ -3,6 +3,7 @@
 
 #include "LiquidCrystalDisplay.h"
 #include "AmpControl.h"
+#include "AmpADC.h"
 
 // Page Numbers
 #define FAN_PAGE      1
@@ -44,10 +45,10 @@
 #define FAN_SPEED_SLIDER        4
 
 // Refresh rate in frames per second
-#define MAX_REFRESH_RATE 30
+#define MAX_REFRESH_RATE 24
 
 // Inherits public items from LiquidCrystal library
-class AmpDisplay: public LiquidCrystal, public AmpControl {
+class AmpDisplay: public LiquidCrystal, public AmpControl, public AmpADC {
 public:
     AmpDisplay();
 
@@ -55,6 +56,7 @@ public:
 
 private:
     elapsedMillis displayRefreshTimer;
+    elapsedMicros adcTimer;
 
     uint8_t   cmd_buffer[CMD_MAX_SIZE];
     uint8_t   data_size;

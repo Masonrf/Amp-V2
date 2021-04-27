@@ -106,7 +106,7 @@
 #define CMD_DATA_LENGTH				6
 
 #define  CHAR						0X30
-#define  CLEAR						0X31
+#define  BTN_TYPE_CLEAR				0X31
 #define  BACK_SPACE					0X32
 #define  SPACE 						0X33
 #define  ENTER						0X34

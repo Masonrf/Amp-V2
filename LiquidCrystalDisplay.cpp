@@ -41,17 +41,21 @@ LiquidCrystal::LiquidCrystal(uint8_t isrPin) {
 }
 
 void LiquidCrystal::I2C_Send(uint8_t *buf,uint8_t len) {
+    noInterrupts();
 	Wire.beginTransmission(LCD_I2C_ADDRESS);
     Wire.write(buf, len);
     Wire.endTransmission();
+    interrupts();
 }
 
 uint8_t LiquidCrystal::I2C_Read(void) {
+    noInterrupts();
 	uint8_t _data = 0;
 	Wire.requestFrom(LCD_I2C_ADDRESS,1);
 	while(Wire.available()) {
 		_data = Wire.read();
 	}
+    interrupts();
     return _data;
 }
 
@@ -443,18 +447,22 @@ void LiquidCrystal::queue_reset() {
 }
 
 void LiquidCrystal::queue_push(qdata _data) {
+    noInterrupts();
 	qsize pos = (que._head + 1)%QUEUE_MAX_SIZE;
 	if(pos != que._tail) {
 		que._data[que._head] = _data;
 		que._head = pos;
 	}
+    interrupts();
 }
 
 void LiquidCrystal::queue_pop(qdata* _data) {
+    noInterrupts();
 	if(que._tail != que._head) {
 		*_data = que._data[que._tail];
 		que._tail = (que._tail + 1)%QUEUE_MAX_SIZE;
 	}
+    interrupts();
 }
 
 uint8_t LiquidCrystal::queue_size() {
