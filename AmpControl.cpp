@@ -9,10 +9,10 @@ AmpControl::AmpControl() {
     EEPROM.get(EEPROM_BASE_ADDR + EEPROM_INPUT_ADDR, tempByte);
     input = byteToBool(tempByte);
     if(input == 0) {
-        digitalWrite(IN_RELAY_PIN, LOW);
+        digitalWriteFast(IN_RELAY_PIN, LOW);
     }
     else {
-        digitalWrite(IN_RELAY_PIN, HIGH);
+        digitalWriteFast(IN_RELAY_PIN, HIGH);
     }
 
     pinMode(OUT_RELAY_PIN, OUTPUT);
@@ -20,14 +20,14 @@ AmpControl::AmpControl() {
     EEPROM.get(EEPROM_BASE_ADDR + EEPROM_OUTPUT_ADDR, tempByte);
     output = byteToBool(tempByte);
     if(output == 0) {
-        digitalWrite(OUT_RELAY_PIN, LOW);
+        digitalWriteFast(OUT_RELAY_PIN, LOW);
     }
     else {
-        digitalWrite(OUT_RELAY_PIN, HIGH);
+        digitalWriteFast(OUT_RELAY_PIN, HIGH);
     }
 
     pinMode(RESET_PIN, OUTPUT);
-    digitalWrite(RESET_PIN, HIGH);
+    digitalWriteFast(RESET_PIN, HIGH);
 
     pinMode(FAN_PWM_PIN, OUTPUT);
     analogWriteFrequency(FAN_PWM_PIN, FAN_PWM_FREQ);
@@ -49,18 +49,18 @@ void AmpControl::toggleRelay(boolean *toggle) {
 
     if(toggle == &input) { // If passed the input boolean, ...
         if(*toggle) {
-            digitalWrite(IN_RELAY_PIN, LOW); // Switch to 3.5mm
+            digitalWriteFast(IN_RELAY_PIN, LOW); // Switch to 3.5mm
         }
         else {
-            digitalWrite(IN_RELAY_PIN, HIGH); // Switch to XLR
+            digitalWriteFast(IN_RELAY_PIN, HIGH); // Switch to XLR
         }
     }
     else if(toggle == &output) {  // If passed the output boolean, ...
         if(*toggle) {
-            digitalWrite(OUT_RELAY_PIN, LOW); // Switch to SpeakOns
+            digitalWriteFast(OUT_RELAY_PIN, LOW); // Switch to SpeakOns
         }
         else {
-            digitalWrite(OUT_RELAY_PIN, HIGH); // Switch to Binding Posts
+            digitalWriteFast(OUT_RELAY_PIN, HIGH); // Switch to Binding Posts
         }
     }
 
@@ -81,7 +81,7 @@ void AmpControl::startReset() {
     }
     reset = true;
     resetTimer.begin(endResetTrigger, 1000 * RESET_DELAY); // delay is in micros
-    digitalWrite(RESET_PIN, LOW);
+    digitalWriteFast(RESET_PIN, LOW);
 }
 
 
@@ -98,8 +98,11 @@ void AmpControl::endReset() {
     if(!reset) {
         return;
     }
-    digitalWrite(RESET_PIN, HIGH);
+    digitalWriteFast(RESET_PIN, HIGH);
     resetTimer.end();
+    // A reset clears these on the amp. Sometimes the mcu has a problem figuring that out
+    clip = false;
+    fault = false;
     // Wanted a bit more delay to give time  for the amp to come out of reset
     resetTimer.begin(endResetFinishTrigger, 1000 * RESET_DELAY / 2);
 }
@@ -124,7 +127,7 @@ void AmpControl::faultISR(){
     if(reset) {
         return; // do not update during a reset
     }
-    fault = !(fault);
+    fault = !fault;
     updateCtrl = true;
 }
 
@@ -136,7 +139,7 @@ void AmpControl::clipISR() {
     if(reset) {
         return; // do not update during a reset
     }
-    clip = !(clip);
+    clip = !clip;
     updateCtrl = true;
 }
 
