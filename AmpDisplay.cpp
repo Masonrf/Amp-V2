@@ -39,11 +39,6 @@ void AmpDisplay::UpdateUI() {
 // There's a limit on how often the MCU can update the display so that the MCU
 // isn't constantly checking for updates and eating up cycles
 void AmpDisplay::refreshDisplay() {
-    if(adcTimer >= 20.8) {
-        adcISR();
-        adcTimer = 0;
-    }
-
     if(displayRefreshTimer >= 1000 / MAX_REFRESH_RATE) { // Get max number of milliseconds per frame
         displayRefreshTimer -= 1000 / MAX_REFRESH_RATE;
 
@@ -185,8 +180,6 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     // one of type UPLOAD_CONTROL_ID on this page
                     if(control_id == HOME_RESET_BTN) {
                         startReset();
-                        delay(500);
-                        endReset();
                     }
                     break;
 

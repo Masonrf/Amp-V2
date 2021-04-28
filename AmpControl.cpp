@@ -1,9 +1,11 @@
 #include "AmpControl.h"
 
+AmpControl *AmpControl::instance;
+
 AmpControl::AmpControl() {
+    instance = this;
 
     pinMode(IN_RELAY_PIN, OUTPUT);
-    //input = 0;
     EEPROM.get(EEPROM_BASE_ADDR + EEPROM_INPUT_ADDR, tempByte);
     input = byteToBool(tempByte);
     if(input == 0) {
@@ -33,7 +35,12 @@ AmpControl::AmpControl() {
     EEPROM.get(EEPROM_BASE_ADDR + EEPROM_FAN_ADDR, fanDutyCycle);
     analogWrite(FAN_PWM_PIN, fanDutyCycle);
 
-    updateCtrl = 1;
+    pinMode(FAULT_PIN, INPUT_PULLUP);
+    pinMode(CLIP_PIN, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(FAULT_PIN), faultTrigger, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(CLIP_PIN), clipTrigger, CHANGE);
+
+    updateCtrl = true;
 }
 
 void AmpControl::toggleRelay(boolean *toggle) {
@@ -66,17 +73,25 @@ void AmpControl::toggleRelay(boolean *toggle) {
     else if(toggle == &output) {
         EEPROM.put(EEPROM_BASE_ADDR + EEPROM_OUTPUT_ADDR, tempByte);
     }
-
-    endReset();
 }
 
 void AmpControl::startReset() {
     if(reset) {
         return;
     }
-    reset = 1;
+    reset = true;
+    resetTimer.begin(endResetTrigger, 1000 * RESET_DELAY); // delay is in micros
     digitalWrite(RESET_PIN, LOW);
-    delay(RESET_DELAY);
+}
+
+
+//////////////////////////////////////////////
+// Private
+//////////////////////////////////////////////
+
+
+void AmpControl::endResetTrigger() {
+    instance->endReset();
 }
 
 void AmpControl::endReset() {
@@ -84,13 +99,46 @@ void AmpControl::endReset() {
         return;
     }
     digitalWrite(RESET_PIN, HIGH);
-    delay(RESET_DELAY / 2);
-    reset = 0;
+    resetTimer.end();
+    // Wanted a bit more delay to give time  for the amp to come out of reset
+    resetTimer.begin(endResetFinishTrigger, 1000 * RESET_DELAY / 2);
 }
 
-//////////////////////////////////////////////
-// Private
-//////////////////////////////////////////////
+void AmpControl::endResetFinishTrigger() {
+    instance->endResetFinish();
+}
+
+void AmpControl::endResetFinish() {
+    if(!reset) {
+        return;  // yeah dont call this function yourself
+    }
+    resetTimer.end();
+    reset = false;
+}
+
+void AmpControl::faultTrigger() {
+    instance->faultISR();
+}
+
+void AmpControl::faultISR(){
+    if(reset) {
+        return; // do not update during a reset
+    }
+    fault = !(fault);
+    updateCtrl = true;
+}
+
+void AmpControl::clipTrigger() {
+    instance->clipISR();
+}
+
+void AmpControl::clipISR() {
+    if(reset) {
+        return; // do not update during a reset
+    }
+    clip = !(clip);
+    updateCtrl = true;
+}
 
 void AmpControl::toggleBool(boolean *toggle) {
     *toggle = !(*toggle);

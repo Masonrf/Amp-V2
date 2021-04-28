@@ -38,7 +38,7 @@
 
  */
 class AmpADC : protected ADC {
-public:
+protected:
 
     float rmsL;     // in dB
     float rmsR;     // in dB
@@ -52,20 +52,19 @@ public:
     void runFFT();
     void readFFTtoBins();
 
-    void adcISR();
-
 private:
     ADC *adc;
-    //IntervalTimer Timer;  // This timer uses hardware timers and interrupts
+    IntervalTimer Timer;  // This timer uses hardware timers and interrupts
 
 
     static AmpADC *instance;
     static void triggerISR();
+    void adcISR();
 
 
     // These need to be volatile. Change in interrupt context
-    /*volatile*/ uint16_t buffLocation;
-    /*volatile*/ bool buffIsReady;
+    volatile uint16_t buffLocation;
+    volatile bool buffIsReady;
 
     // I'd use dynamic allocation for these, but I wanted them in RAM 1
     // Also these are NOT volatile. The pointers don't change in interrupts

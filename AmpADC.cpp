@@ -23,7 +23,7 @@ AmpADC::AmpADC() {
     adc->adc1->recalibrate();
 
     Serial.begin(9600);
-    //Timer.begin(triggerISR, 1000000.0 / SAMPLE_FREQ);
+    Timer.begin(triggerISR, 1000000.0 / SAMPLE_FREQ);
 }
 
 void AmpADC::triggerISR() {

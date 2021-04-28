@@ -56,7 +56,6 @@ public:
 
 private:
     elapsedMillis displayRefreshTimer;
-    elapsedMicros adcTimer;
 
     uint8_t   cmd_buffer[CMD_MAX_SIZE];
     uint8_t   data_size;
