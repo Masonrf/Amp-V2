@@ -22,7 +22,6 @@ AmpADC::AmpADC() {
     adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::SAMPLE_SPD); // change the sampling speed
     adc->adc1->recalibrate();
 
-    Serial.begin(9600);
     Timer.begin(triggerISR, 1000000.0 / SAMPLE_FREQ);
 }
 

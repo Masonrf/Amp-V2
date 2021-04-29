@@ -43,11 +43,11 @@ AmpControl::AmpControl() {
     updateCtrl = true;
 }
 
-void AmpControl::toggleRelay(boolean *toggle) {
+void AmpControl::toggleRelay(bool *toggle) {
     // A disabling the amp is necessary to prevent popping when switching the relays
     startReset();
 
-    if(toggle == &input) { // If passed the input boolean, ...
+    if(toggle == &input) { // If passed the input bool, ...
         if(*toggle) {
             digitalWriteFast(IN_RELAY_PIN, LOW); // Switch to 3.5mm
         }
@@ -55,7 +55,7 @@ void AmpControl::toggleRelay(boolean *toggle) {
             digitalWriteFast(IN_RELAY_PIN, HIGH); // Switch to XLR
         }
     }
-    else if(toggle == &output) {  // If passed the output boolean, ...
+    else if(toggle == &output) {  // If passed the output bool, ...
         if(*toggle) {
             digitalWriteFast(OUT_RELAY_PIN, LOW); // Switch to SpeakOns
         }
@@ -64,7 +64,7 @@ void AmpControl::toggleRelay(boolean *toggle) {
         }
     }
 
-    toggleBool(toggle);  // Switch the boolean
+    toggleBool(toggle);  // Switch the bool
 
     tempByte = boolToByte(*toggle);
     if(toggle == &input) {
@@ -143,11 +143,11 @@ void AmpControl::clipISR() {
     updateCtrl = true;
 }
 
-void AmpControl::toggleBool(boolean *toggle) {
+void AmpControl::toggleBool(bool *toggle) {
     *toggle = !(*toggle);
 }
 
-uint8_t AmpControl::boolToByte(boolean inputBool) {
+uint8_t AmpControl::boolToByte(bool inputBool) {
     if(inputBool) {
         return 1;
     }
@@ -156,7 +156,7 @@ uint8_t AmpControl::boolToByte(boolean inputBool) {
     }
 }
 
-boolean AmpControl::byteToBool(uint8_t inputByte) {
+bool AmpControl::byteToBool(uint8_t inputByte) {
     if(inputByte == 0) {
         return 0;
     }

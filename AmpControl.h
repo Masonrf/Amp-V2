@@ -37,17 +37,17 @@ class AmpControl {
 protected:
     AmpControl();
 
-    volatile boolean fault;  // 0 == no fault,    1 == fault
-    volatile boolean clip;   // 0 == no clip,     1 == clipping
-    boolean input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
-    boolean output;          // 0 == SpeakOns,    1 == Posts
-    volatile boolean reset;
+    volatile bool fault;  // 0 == no fault,    1 == fault
+    volatile bool clip;   // 0 == no clip,     1 == clipping
+    bool input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
+    bool output;          // 0 == SpeakOns,    1 == Posts
+    volatile bool reset;
 
-    boolean updateCtrl;     // Tell the display to update
+    bool updateCtrl;     // Tell the display to update
 
     uint8_t fanDutyCycle;
 
-    void toggleRelay(boolean *toggle);
+    void toggleRelay(bool *toggle);
     void startReset();
 
 
@@ -66,9 +66,9 @@ private:
     void faultISR();
     void clipISR();
 
-    void toggleBool(boolean *toggle);
-    uint8_t boolToByte(boolean inputBool);
-    boolean byteToBool(uint8_t inputByte);
+    void toggleBool(bool *toggle);
+    uint8_t boolToByte(bool inputBool);
+    bool byteToBool(uint8_t inputByte);
 };
 
 #endif

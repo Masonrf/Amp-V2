@@ -38,15 +38,19 @@
 
  */
 class AmpADC : protected ADC {
+public:
+    // These functions are for debugging through the serial monitor only.
+    // You will need to Serial.begin() before using these.
+    void printBuffs();
+    void printFFT();
+    void printRMS();
+
 protected:
 
     float rmsL;     // in dB
     float rmsR;     // in dB
 
     AmpADC();
-    void printBuffs();
-    void printFFT();
-    void printRMS();
 
     void getRMS();
     void runFFT();
@@ -56,11 +60,9 @@ private:
     ADC *adc;
     IntervalTimer Timer;  // This timer uses hardware timers and interrupts
 
-
     static AmpADC *instance;
     static void triggerISR();
     void adcISR();
-
 
     // These need to be volatile. Change in interrupt context
     volatile uint16_t buffLocation;
@@ -73,8 +75,10 @@ private:
 
     float vImagL[BUFF_SIZE];
     float vImagR[BUFF_SIZE];
+
     // used for precalculated windowing (fft.windowing wont relcalculate every time its called)
     float weighingFactors[BUFF_SIZE];
+    
     ArduinoFFT<float> fftL = ArduinoFFT<float>(adc0Buff, vImagL, BUFF_SIZE, SAMPLE_FREQ, weighingFactors);
     ArduinoFFT<float> fftR = ArduinoFFT<float>(adc1Buff, vImagR, BUFF_SIZE, SAMPLE_FREQ, weighingFactors);
 

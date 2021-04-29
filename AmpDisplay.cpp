@@ -294,7 +294,7 @@ void AmpDisplay::NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t st
     update_en = 1;
 }
 
-void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indicatorVar) {
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, bool indicatorVar) {
     if(indicatorVar) {
         SetProgressbarValue(pageID, indicatorID, 100);
     }
@@ -303,7 +303,7 @@ void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indic
     }
 }
 
-void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, boolean indicatorVar) {
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, bool indicatorVar) {
     if(indicatorVar) {
         SetProgressbarValue(pageID, indicatorIdTrue, 100);
         SetProgressbarValue(pageID, indicatorIdFalse, 0);
