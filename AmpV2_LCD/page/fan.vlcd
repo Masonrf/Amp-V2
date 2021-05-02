@@ -13,6 +13,6 @@
 <slider x = "60" y = "240" width = "360" height = "56" ShapeName = "WhiteSmoke" ShapeNum = "4" Direction = "Horizontal" StoreType = "Local" RadianNum = "0"
  xlink:href = "C:\Users\mrf\Documents\Random Projects\Amp V2\Actual project files\Amp-V2\AmpV2_LCD\image\image002.bmp">
 </slider>
-<text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "270" y = "202" width = "23.32118" height = "23.46093" ShapeName = "Transparent" ShapeNum = "116" >%</text>
-<number style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "235" y = "204" width = "16.91363" height = "23.46093" ShapeName = "Color" ShapeNum = "3" RadianNum = "0" >0</number>
+<text style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "260" y = "204" width = "48.94226" height = "23.46093" ShapeName = "Transparent" ShapeNum = "116" >RPM</text>
+<number style = "fill:WhiteSmoke; stroke:Transparent; font-family:; font-size:14pt" x = "225" y = "204" width = "16.91363" height = "23.46093" ShapeName = "Color" ShapeNum = "3" RadianNum = "0" >0</number>
 </vlcd>

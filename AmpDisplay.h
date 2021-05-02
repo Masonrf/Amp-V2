@@ -3,6 +3,7 @@
 
 #include "LiquidCrystalDisplay.h"
 #include "AmpControl.h"
+#include "AmpADC.h"
 
 // Page Numbers
 #define FAN_PAGE      1
@@ -44,10 +45,10 @@
 #define FAN_SPEED_SLIDER        4
 
 // Refresh rate in frames per second
-#define MAX_REFRESH_RATE 30
+#define MAX_REFRESH_RATE 24
 
 // Inherits public items from LiquidCrystal library
-class AmpDisplay: public LiquidCrystal, public AmpControl {
+class AmpDisplay: public LiquidCrystal, public AmpControl, public AmpADC {
 public:
     AmpDisplay();
 
@@ -75,8 +76,8 @@ private:
     void NotifyGetCheckbox(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value);
     void NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t  state,uint8_t type,uint8_t value);
 
-    void setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indicatorVar);
-    void setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, boolean indicatorVar);
+    void setIndicator(uint8_t pageID, uint8_t indicatorID, bool indicatorVar);
+    void setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, bool indicatorVar);
 };
 
 #endif

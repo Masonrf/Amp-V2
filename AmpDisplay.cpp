@@ -1,6 +1,6 @@
 #include "AmpDisplay.h"
 
-AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl() {
+AmpDisplay::AmpDisplay() : LiquidCrystal(LCD_INT_PIN), AmpControl(), AmpADC() {
     update_en = 1;
     data_size = 0;
     SetPage(MAIN_PAGE);
@@ -12,6 +12,8 @@ void AmpDisplay::UpdateUI() {
         case MAIN_PAGE:
             setIndicator(MAIN_PAGE, HOME_CLIP_INDICATOR, clip);
             setIndicator(MAIN_PAGE, HOME_FAULT_INDICATOR, fault);
+
+
             break;
 
         case INPUTS_PAGE:
@@ -42,15 +44,33 @@ void AmpDisplay::refreshDisplay() {
 
         data_size = check_for_cmd(cmd_buffer);
         if(data_size > 0) { // recieved a command
+            noInterrupts();
             //Serial.println(data_size, HEX);
             //Serial.println(F("ProcessMessage"));
             ProcessMessage((PCTRL_MSG)cmd_buffer, data_size);//command process
+            interrupts();
         }
 
+        // Items that need constant updates on main page
+        if(current_page == MAIN_PAGE) {
+            getRMS();  // calculate rms in dB
+            //printRMS();
+            SetProgressbarValue( MAIN_PAGE, HOME_L_VU_METER, map(rmsL, 24, 54, 0, 100) );
+            SetProgressbarValue( MAIN_PAGE, HOME_R_VU_METER, map(rmsR, 24, 54, 0, 100) );
+        }
+
+        /*
+        // Items that need constant updates on FFT page
+        if(current_page == FFT_PAGE) {
+            update_en == ;
+        }
+        */
+
+        // Items that only update occasionally for ALL pages
         if(update_en || updateCtrl) {
             //Serial.println(F("UpdateUI"));
-            updateCtrl = 0;
-            update_en = 0;
+            updateCtrl = false;
+            update_en = false;
             UpdateUI();
         }
     }
@@ -160,8 +180,6 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
                     // one of type UPLOAD_CONTROL_ID on this page
                     if(control_id == HOME_RESET_BTN) {
                         startReset();
-                        delay(500);
-                        endReset();
                     }
                     break;
 
@@ -178,7 +196,7 @@ void AmpDisplay::NotifyTouchButton(uint8_t page_id, uint8_t control_id, uint8_t 
 
             break;
 
-        case CLEAR:  // Nothing of this type yet
+        case BTN_TYPE_CLEAR:  // Nothing of this type yet
             break;
 
         default:
@@ -276,7 +294,7 @@ void AmpDisplay::NotifyGetSlider(uint8_t page_id, uint8_t control_id, uint8_t st
     update_en = 1;
 }
 
-void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indicatorVar) {
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, bool indicatorVar) {
     if(indicatorVar) {
         SetProgressbarValue(pageID, indicatorID, 100);
     }
@@ -285,7 +303,7 @@ void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorID, boolean indic
     }
 }
 
-void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, boolean indicatorVar) {
+void AmpDisplay::setIndicator(uint8_t pageID, uint8_t indicatorIdTrue, uint8_t indicatorIdFalse, bool indicatorVar) {
     if(indicatorVar) {
         SetProgressbarValue(pageID, indicatorIdTrue, 100);
         SetProgressbarValue(pageID, indicatorIdFalse, 0);

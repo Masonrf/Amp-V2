@@ -16,11 +16,9 @@
 #define TACH_PIN      4
 #define IN_RELAY_PIN  5
 #define OUT_RELAY_PIN 6
-#define ADC_L_PIN     14
-#define ADC_R_PIN     15
 #define LCD_INT_PIN   20
 
-#define RESET_DELAY   100    // Time in ms to hold the reset pin low
+#define RESET_DELAY   500    // Time in ms to hold the reset pin low
 #define FAN_PWM_FREQ  25000  // PWM frequncy in Hz
 
 /* These EEPROMs are rated for >100k writes per address. Realistically, you probably
@@ -36,29 +34,41 @@
 
 
 class AmpControl {
-public:
+protected:
     AmpControl();
 
-    volatile boolean fault;  // 0 == no fault,    1 == fault
-    volatile boolean clip;   // 0 == no clip,     1 == clipping
-    boolean input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
-    boolean output;          // 0 == SpeakOns,    1 == Posts
-    boolean reset;
+    volatile bool fault;  // 0 == no fault,    1 == fault
+    volatile bool clip;   // 0 == no clip,     1 == clipping
+    bool input;           // 0 == 3.5mm (SE),  1 == XLR (Diff)
+    bool output;          // 0 == SpeakOns,    1 == Posts
+    volatile bool reset;
 
-    boolean updateCtrl;     // Tell the display to update
+    bool updateCtrl;     // Tell the display to update
 
     uint8_t fanDutyCycle;
 
-    void toggleRelay(boolean *toggle);
+    void toggleRelay(bool *toggle);
     void startReset();
-    void endReset();
+
 
 private:
     uint8_t tempByte;
+    IntervalTimer resetTimer;
+    static AmpControl *instance;
 
-    void toggleBool(boolean *toggle);
-    uint8_t boolToByte(boolean inputBool);
-    boolean byteToBool(uint8_t inputByte);
+    static void endResetTrigger();
+    static void endResetFinishTrigger();
+    static void faultTrigger();
+    static void clipTrigger();
+
+    void endReset();
+    void endResetFinish();
+    void faultISR();
+    void clipISR();
+
+    void toggleBool(bool *toggle);
+    uint8_t boolToByte(bool inputBool);
+    bool byteToBool(uint8_t inputByte);
 };
 
 #endif

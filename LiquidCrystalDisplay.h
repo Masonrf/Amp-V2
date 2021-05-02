@@ -106,7 +106,7 @@
 #define CMD_DATA_LENGTH				6
 
 #define  CHAR						0X30
-#define  CLEAR						0X31
+#define  BTN_TYPE_CLEAR				0X31
 #define  BACK_SPACE					0X32
 #define  SPACE 						0X33
 #define  ENTER						0X34
@@ -158,46 +158,46 @@ protected:
 
 	LiquidCrystal(uint8_t isrPin);
 
-  	virtual size_t write(uint8_t);
-  	void command(uint8_t);
+  	virtual size_t write(uint8_t value);
+  	void command(uint8_t value);
 
 	void I2C_Add_CMD();
 
-  	void SetReset(void);
- 	void PutString(uint16_t x,uint16_t y,uint8_t DisplayType,uint8_t FontSize,uint8_t ImageNo,uint16_t BackColor,uint16_t ForeColor, uint8_t *strings);
-	void Line(uint16_t,uint16_t,uint16_t,uint16_t,uint16_t ForeColor);
-	void Rectangle(uint16_t x0,uint16_t y0, uint16_t x1,uint16_t y1, uint16_t ForeColor);
-	void RectangleFill(uint16_t x0,uint16_t y0, uint16_t x1,uint16_t y1, uint16_t ForeColor);
+  	void SetReset();
+ 	void PutString(uint16_t x, uint16_t y, uint8_t DisplayType, uint8_t FontSize, uint8_t ImageNo, uint16_t BackColor, uint16_t ForeColor, uint8_t *strings);
+	void Line(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t ForeColor);
+	void Rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t ForeColor);
+	void RectangleFill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t ForeColor);
 	void ClrScreen(uint16_t Color);
-	void Display_Image(uint16_t x,uint16_t y,uint8_t image_id);
-	void DisplayCut_Image(uint16_t image_x,uint16_t image_y,uint16_t image_w, uint16_t image_h,uint8_t  image_id);
-	void Display_Message(uint8_t FontSize,uint8_t time,uint8_t *strings );
-	void SetBackLight(uint8_t);
-	void SetTouchPaneOption(uint8_t);
-	void CalibrateTouchPane(void);
+	void Display_Image(uint16_t x, uint16_t y, uint8_t image_id);
+	void DisplayCut_Image(uint16_t image_x, uint16_t image_y, uint16_t image_w, uint16_t image_h, uint8_t image_id);
+	void Display_Message(uint8_t FontSize, uint8_t time, uint8_t *strings);
+	void SetBackLight(uint8_t brightness);
+	void SetTouchPaneOption(uint8_t enable);
+	void CalibrateTouchPane();
 	void TestTouchPane(uint8_t enable);
 
 	void SetPage(uint8_t page_id);
-	void GetPage(void);
-	void SetLableValue(uint8_t page_id,uint8_t control_id,uint8_t *strings);
-	void SetNumberValue(uint8_t page_id,uint8_t control_id,uint16_t number);
-	void SetEditValue(uint8_t page_id,uint8_t control_id,uint8_t *strings);
-	void GetEditValue(uint8_t page_id,uint8_t control_id);
-	void SetProgressbarValue(uint8_t page_id,uint8_t control_id,uint8_t value);
-	void SetCheckboxValue(uint8_t page_id,uint8_t control_id,uint8_t value);
-	void GetCheckboxValue(uint8_t page_id,uint8_t control_id);
-	void SetCircleGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value);
-	void SetBarGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value);
-	void SetWaterGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value);
-	void SetThermometerValue(uint8_t page_id,uint8_t control_id,uint16_t value);
-	void SetBatteryValue(uint8_t page_id,uint8_t control_id,uint16_t value);
-	void SetWaveformValue(uint8_t page_id,uint8_t control_id,uint8_t channelNo,uint8_t value);
-	void WaveformDataClear(uint8_t page_id,uint8_t control_id);
-	void WaveformDataInsert(uint8_t page_id,uint8_t control_id,uint8_t channelNo,uint8_t value);
-	void WaveformDataRefress(uint8_t page_id,uint8_t control_id,uint8_t channelNo);
-	void GetSliderValue(uint8_t page_id,uint8_t control_id);
-	void SetSliderValue(uint8_t page_id,uint8_t control_id,uint8_t value);
-	void GetTouchEditValue(uint8_t page_id,uint8_t control_id);
+	void GetPage();
+	void SetLableValue(uint8_t page_id, uint8_t control_id, uint8_t *strings);
+	void SetNumberValue(uint8_t page_id, uint8_t control_id, uint16_t number);
+	void SetEditValue(uint8_t page_id, uint8_t control_id, uint8_t *strings);
+	void GetEditValue(uint8_t page_id, uint8_t control_id);
+	void SetProgressbarValue(uint8_t page_id, uint8_t control_id, uint8_t value);
+	void SetCheckboxValue(uint8_t page_id, uint8_t control_id, uint8_t value);
+	void GetCheckboxValue(uint8_t page_id, uint8_t control_id);
+	void SetCircleGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value);
+	void SetBarGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value);
+	void SetWaterGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value);
+	void SetThermometerValue(uint8_t page_id, uint8_t control_id, uint16_t value);
+	void SetBatteryValue(uint8_t page_id, uint8_t control_id, uint16_t value);
+	void SetWaveformValue(uint8_t page_id, uint8_t control_id, uint8_t channelNo, uint8_t value);
+	void WaveformDataClear(uint8_t page_id, uint8_t control_id);
+	void WaveformDataInsert(uint8_t page_id, uint8_t control_id, uint8_t channelNo, uint8_t value);
+	void WaveformDataRefress(uint8_t page_id, uint8_t control_id, uint8_t channelNo);
+	void GetSliderValue(uint8_t page_id, uint8_t control_id);
+	void SetSliderValue(uint8_t page_id, uint8_t control_id, uint8_t value);
+	void GetTouchEditValue(uint8_t page_id, uint8_t control_id);
 
 	uint8_t check_for_cmd(qdata *cmd);
 
@@ -206,17 +206,17 @@ private:
 
   	uint8_t  sendbuf[65];
 
-  	void I2C_Send(uint8_t *,uint8_t);
-	uint8_t I2C_Read(void);
+  	void I2C_Send(uint8_t *buf, uint8_t len);
+	uint8_t I2C_Read();
 
 	static LiquidCrystal *sLCD;
 	static void I2C_ISR();
 
-	void queue_reset(void);
+	void queue_reset();
   	void queue_push(qdata _data);
   	void queue_pop(qdata* _data);
   	uint8_t queue_size();
-  	uint8_t queue_find_cmd(qdata *cmd,qsize buf_len);
+  	uint8_t queue_find_cmd(qdata *cmd, qsize buf_len);
 
   	qsize cmd_pos;
   	qdata _length;

@@ -40,18 +40,22 @@ LiquidCrystal::LiquidCrystal(uint8_t isrPin) {
 	queue_reset();
 }
 
-void LiquidCrystal::I2C_Send(uint8_t *buf,uint8_t len) {
+void LiquidCrystal::I2C_Send(uint8_t *buf, uint8_t len) {
+    noInterrupts();
 	Wire.beginTransmission(LCD_I2C_ADDRESS);
     Wire.write(buf, len);
     Wire.endTransmission();
+    interrupts();
 }
 
-uint8_t LiquidCrystal::I2C_Read(void) {
+uint8_t LiquidCrystal::I2C_Read() {
+    noInterrupts();
 	uint8_t _data = 0;
 	Wire.requestFrom(LCD_I2C_ADDRESS,1);
 	while(Wire.available()) {
 		_data = Wire.read();
 	}
+    interrupts();
     return _data;
 }
 
@@ -95,7 +99,7 @@ uint8_t LiquidCrystal::check_for_cmd(qdata *cmd) {
 	return queue_find_cmd(cmd, CMD_MAX_SIZE);
 }
 
-void LiquidCrystal::SetReset(void) {
+void LiquidCrystal::SetReset() {
 	sendbuf[0] = CMD_RESET;
 	sendbuf[1] = 0x52;
 	sendbuf[2] = 0x65;
@@ -112,7 +116,7 @@ void LiquidCrystal::ClrScreen(uint16_t Color) {
 	I2C_Send(sendbuf, 3);
 }
 
-void LiquidCrystal::Display_Image(uint16_t x,uint16_t y,uint8_t image_id) {
+void LiquidCrystal::Display_Image(uint16_t x, uint16_t y, uint8_t image_id) {
 	sendbuf[0] = CMD_ICON_DISPLAY;
 	sendbuf[1] = (x>>8);
 	sendbuf[2] =  x;
@@ -123,7 +127,7 @@ void LiquidCrystal::Display_Image(uint16_t x,uint16_t y,uint8_t image_id) {
 	I2C_Send(sendbuf, 6);
 }
 
-void LiquidCrystal::DisplayCut_Image(uint16_t image_x,uint16_t image_y,uint16_t image_w, uint16_t image_h,uint8_t  image_id) {
+void LiquidCrystal::DisplayCut_Image(uint16_t image_x, uint16_t image_y, uint16_t image_w, uint16_t image_h, uint8_t image_id) {
 	sendbuf[0] = CMD_CUT_ICON;
 	sendbuf[1] = (image_x>>8);
 	sendbuf[2] =  image_x;
@@ -139,7 +143,7 @@ void LiquidCrystal::DisplayCut_Image(uint16_t image_x,uint16_t image_y,uint16_t 
 }
 
 
-void LiquidCrystal::PutString(uint16_t x,uint16_t y,uint8_t DisplayType,uint8_t FontSize,uint8_t ImageNo,uint16_t BackColor,uint16_t ForeColor, uint8_t *strings) {
+void LiquidCrystal::PutString(uint16_t x, uint16_t y, uint8_t DisplayType, uint8_t FontSize, uint8_t ImageNo, uint16_t BackColor, uint16_t ForeColor, uint8_t *strings) {
 	uint8_t i = 0;
 
 	sendbuf[0] = CMD_STR_DISPLAY;
@@ -163,7 +167,7 @@ void LiquidCrystal::PutString(uint16_t x,uint16_t y,uint8_t DisplayType,uint8_t 
 	I2C_Send(sendbuf, 12 + i);
 }
 
-void LiquidCrystal::Display_Message(uint8_t FontSize,uint8_t time,uint8_t *strings ) {
+void LiquidCrystal::Display_Message(uint8_t FontSize, uint8_t time, uint8_t *strings ) {
 	uint8_t i = 0;
 	sendbuf[0] = CMD_MESSAGE_DISPLAY;
 	sendbuf[1] = FontSize;
@@ -178,7 +182,7 @@ void LiquidCrystal::Display_Message(uint8_t FontSize,uint8_t time,uint8_t *strin
 
 }
 
-void LiquidCrystal::Line(uint16_t s_x,uint16_t s_y,uint16_t e_x,uint16_t e_y,uint16_t ForeColor) {
+void LiquidCrystal::Line(uint16_t s_x, uint16_t s_y, uint16_t e_x, uint16_t e_y, uint16_t ForeColor) {
 	sendbuf[0] = CMD_DRAW_LINE;
 	sendbuf[1] = (s_x>>8);
 	sendbuf[2] = s_x;
@@ -194,7 +198,7 @@ void LiquidCrystal::Line(uint16_t s_x,uint16_t s_y,uint16_t e_x,uint16_t e_y,uin
 }
 
 
-void LiquidCrystal::Rectangle(uint16_t x0,uint16_t y0, uint16_t x1,uint16_t y1, uint16_t ForeColor) {
+void LiquidCrystal::Rectangle(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t ForeColor) {
 	sendbuf[0] = CMD_DRAW_RECT;
 	sendbuf[1] = (x0>>8);
 	sendbuf[2] = x0;
@@ -209,7 +213,7 @@ void LiquidCrystal::Rectangle(uint16_t x0,uint16_t y0, uint16_t x1,uint16_t y1, 
 	I2C_Send(sendbuf, 11);
 }
 
-void LiquidCrystal::RectangleFill(uint16_t x0,uint16_t y0, uint16_t x1,uint16_t y1, uint16_t ForeColor) {
+void LiquidCrystal::RectangleFill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t ForeColor) {
 	sendbuf[0] = CMD_DRAW_FILL_RECT;
 	sendbuf[1] = (x0>>8);
 	sendbuf[2] = x0;
@@ -237,7 +241,7 @@ void LiquidCrystal::SetTouchPaneOption(uint8_t enable) {
 	I2C_Send(sendbuf, 2);
 }
 
-void LiquidCrystal::CalibrateTouchPane(void) {
+void LiquidCrystal::CalibrateTouchPane() {
 	sendbuf[0] = CMD_TP_CALIBRATION;
 	sendbuf[1] = 0x50;
 	I2C_Send(sendbuf, 2);
@@ -260,13 +264,13 @@ void LiquidCrystal::SetPage(uint8_t page_id) {
 }
 
 // Sends a command to the display to send back the current page number (?)
-void LiquidCrystal::GetPage(void) {
+void LiquidCrystal::GetPage() {
 	sendbuf[0] = GET_PAGE_ID;
 	I2C_Send(sendbuf, 1);
 }
 
 //
-void LiquidCrystal::SetLableValue(uint8_t page_id,uint8_t control_id,uint8_t *strings) {
+void LiquidCrystal::SetLableValue(uint8_t page_id, uint8_t control_id, uint8_t *strings) {
 	uint8_t i=0;
 	sendbuf[0] = LABLE;
 	sendbuf[1] = control_id;
@@ -279,7 +283,7 @@ void LiquidCrystal::SetLableValue(uint8_t page_id,uint8_t control_id,uint8_t *st
 	I2C_Send(sendbuf, 3 + i);
 }
 
-void LiquidCrystal::SetNumberValue(uint8_t page_id,uint8_t control_id,uint16_t number) {
+void LiquidCrystal::SetNumberValue(uint8_t page_id, uint8_t control_id, uint16_t number) {
 	sendbuf[0] = NUMBER;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -288,7 +292,7 @@ void LiquidCrystal::SetNumberValue(uint8_t page_id,uint8_t control_id,uint16_t n
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetEditValue(uint8_t page_id,uint8_t control_id,uint8_t *strings) {
+void LiquidCrystal::SetEditValue(uint8_t page_id, uint8_t control_id, uint8_t *strings) {
 	uint8_t i = 0;
 	sendbuf[0] = EDIT;
 	sendbuf[1] = control_id;
@@ -302,14 +306,14 @@ void LiquidCrystal::SetEditValue(uint8_t page_id,uint8_t control_id,uint8_t *str
 	I2C_Send(sendbuf, 3 + i);
 }
 
-void LiquidCrystal::GetEditValue(uint8_t page_id,uint8_t control_id) {
+void LiquidCrystal::GetEditValue(uint8_t page_id, uint8_t control_id) {
 	sendbuf[0] = GET_EDIT_VALUE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
 	I2C_Send(sendbuf, 3);
 }
 
-void LiquidCrystal::GetTouchEditValue(uint8_t page_id,uint8_t control_id) {
+void LiquidCrystal::GetTouchEditValue(uint8_t page_id, uint8_t control_id) {
 	sendbuf[0] = GET_TOUCH_EDIT_VALUE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -317,7 +321,7 @@ void LiquidCrystal::GetTouchEditValue(uint8_t page_id,uint8_t control_id) {
 }
 
 
-void LiquidCrystal::SetProgressbarValue(uint8_t page_id,uint8_t control_id,uint8_t value) {
+void LiquidCrystal::SetProgressbarValue(uint8_t page_id, uint8_t control_id, uint8_t value) {
 	sendbuf[0] = PROGRESS;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -325,7 +329,7 @@ void LiquidCrystal::SetProgressbarValue(uint8_t page_id,uint8_t control_id,uint8
 	I2C_Send(sendbuf, 4);
 }
 
-void LiquidCrystal::SetCheckboxValue(uint8_t page_id,uint8_t control_id,uint8_t value) {
+void LiquidCrystal::SetCheckboxValue(uint8_t page_id, uint8_t control_id, uint8_t value) {
 	sendbuf[0] = CHECKBOX;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -333,14 +337,14 @@ void LiquidCrystal::SetCheckboxValue(uint8_t page_id,uint8_t control_id,uint8_t 
 	I2C_Send(sendbuf, 4);
 }
 
-void LiquidCrystal::GetCheckboxValue(uint8_t page_id,uint8_t control_id) {
+void LiquidCrystal::GetCheckboxValue(uint8_t page_id, uint8_t control_id) {
 	sendbuf[0] = GET_CHECKBOX_VALUE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
 	I2C_Send(sendbuf, 3);
 }
 
-void LiquidCrystal::SetCircleGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value) {
+void LiquidCrystal::SetCircleGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value) {
 	sendbuf[0] = CIRCLEGAUGE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -349,7 +353,7 @@ void LiquidCrystal::SetCircleGaugeValue(uint8_t page_id,uint8_t control_id,uint1
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetBarGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value) {
+void LiquidCrystal::SetBarGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value) {
 	sendbuf[0] = BARGAUGE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -358,7 +362,7 @@ void LiquidCrystal::SetBarGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetWaterGaugeValue(uint8_t page_id,uint8_t control_id,uint16_t value) {
+void LiquidCrystal::SetWaterGaugeValue(uint8_t page_id, uint8_t control_id, uint16_t value) {
 	sendbuf[0] = WATERGAUGE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -367,7 +371,7 @@ void LiquidCrystal::SetWaterGaugeValue(uint8_t page_id,uint8_t control_id,uint16
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetThermometerValue(uint8_t page_id,uint8_t control_id,uint16_t value) {
+void LiquidCrystal::SetThermometerValue(uint8_t page_id, uint8_t control_id, uint16_t value) {
 	sendbuf[0] = THERMOMETER;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -376,7 +380,7 @@ void LiquidCrystal::SetThermometerValue(uint8_t page_id,uint8_t control_id,uint1
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetBatteryValue(uint8_t page_id,uint8_t control_id,uint16_t value) {
+void LiquidCrystal::SetBatteryValue(uint8_t page_id, uint8_t control_id, uint16_t value) {
 	sendbuf[0] = BATTERY;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -385,7 +389,7 @@ void LiquidCrystal::SetBatteryValue(uint8_t page_id,uint8_t control_id,uint16_t 
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::SetWaveformValue(uint8_t page_id,uint8_t control_id,uint8_t channelNo,uint8_t value) {
+void LiquidCrystal::SetWaveformValue(uint8_t page_id, uint8_t control_id, uint8_t channelNo, uint8_t value) {
 	sendbuf[0] = WAVEFORM;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -394,14 +398,14 @@ void LiquidCrystal::SetWaveformValue(uint8_t page_id,uint8_t control_id,uint8_t 
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::WaveformDataClear(uint8_t page_id,uint8_t control_id) {
+void LiquidCrystal::WaveformDataClear(uint8_t page_id, uint8_t control_id) {
 	sendbuf[0] = CLEAR_WAVEFORM;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
 	I2C_Send(sendbuf, 3);
 }
 
-void LiquidCrystal::WaveformDataInsert(uint8_t page_id,uint8_t control_id,uint8_t channelNo,uint8_t value) {
+void LiquidCrystal::WaveformDataInsert(uint8_t page_id, uint8_t control_id, uint8_t channelNo, uint8_t value) {
 	sendbuf[0] = INSER_WAVEFORM_DATA;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -410,7 +414,7 @@ void LiquidCrystal::WaveformDataInsert(uint8_t page_id,uint8_t control_id,uint8_
 	I2C_Send(sendbuf, 5);
 }
 
-void LiquidCrystal::WaveformDataRefress(uint8_t page_id,uint8_t control_id,uint8_t channelNo) {
+void LiquidCrystal::WaveformDataRefress(uint8_t page_id, uint8_t control_id, uint8_t channelNo) {
 	sendbuf[0] = REFRESS_WAVEFORM;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -418,14 +422,14 @@ void LiquidCrystal::WaveformDataRefress(uint8_t page_id,uint8_t control_id,uint8
 	I2C_Send(sendbuf, 4);
 }
 
-void LiquidCrystal::GetSliderValue(uint8_t page_id,uint8_t control_id) {
+void LiquidCrystal::GetSliderValue(uint8_t page_id, uint8_t control_id) {
 	sendbuf[0] = GET_SLIDER_VALUE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
 	I2C_Send(sendbuf, 3);
 }
 
-void LiquidCrystal::SetSliderValue(uint8_t page_id,uint8_t control_id,uint8_t value) {
+void LiquidCrystal::SetSliderValue(uint8_t page_id, uint8_t control_id, uint8_t value) {
 	sendbuf[0] = SET_SLIDER_VALUE;
 	sendbuf[1] = control_id;
 	sendbuf[2] = page_id;
@@ -443,25 +447,29 @@ void LiquidCrystal::queue_reset() {
 }
 
 void LiquidCrystal::queue_push(qdata _data) {
+    noInterrupts();
 	qsize pos = (que._head + 1)%QUEUE_MAX_SIZE;
 	if(pos != que._tail) {
 		que._data[que._head] = _data;
 		que._head = pos;
 	}
+    interrupts();
 }
 
 void LiquidCrystal::queue_pop(qdata* _data) {
+    noInterrupts();
 	if(que._tail != que._head) {
 		*_data = que._data[que._tail];
 		que._tail = (que._tail + 1)%QUEUE_MAX_SIZE;
 	}
+    interrupts();
 }
 
 uint8_t LiquidCrystal::queue_size() {
 	return ((que._head + QUEUE_MAX_SIZE - que._tail)%QUEUE_MAX_SIZE);
 }
 
-uint8_t LiquidCrystal::queue_find_cmd(qdata *buffer,qsize buf_len) {
+uint8_t LiquidCrystal::queue_find_cmd(qdata *buffer, qsize buf_len) {
 	qsize cmd_size = 0;
 	qdata _data = 0;
 
