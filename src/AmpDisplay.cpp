@@ -11,7 +11,7 @@ elapsedMillis displayRefreshTimer;
 // isn't constantly checking for updates and eating up cycles
 void refreshDisplay() {
     nexDisplay.NextionListen();
-
+/*
     if(displayRefreshTimer >= 1000 / MAX_REFRESH_RATE) { // Get max number of milliseconds per frame
         displayRefreshTimer -= 1000 / MAX_REFRESH_RATE;
 
@@ -36,6 +36,7 @@ void refreshDisplay() {
             
         }
     }
+*/
 }
 
 
@@ -44,18 +45,36 @@ void trigger0() {
     amp_control.startReset();
 }
 
-// Input select button press event
+// Input select se button press event
 void trigger1() {
-    setIndicator("diff_sel.val", "se_sel.val", amp_control.input);
-    amp_control.toggleRelay(&(amp_control.input));
-    setIndicator("diff_sel.val", "se_sel.val", amp_control.input); // display seems to respond better sending the update twice
+    if(amp_control.input != 0) {    // se is not selected 
+        setIndicator("se_sel.val", "diff_sel.val", amp_control.input);
+        amp_control.toggleRelay(&(amp_control.input));
+    }
 }
 
-// Output select button press event
+// Input select diff button press event
 void trigger2() {
-    setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
-    amp_control.toggleRelay(&(amp_control.output));
-    setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output); // display seems to respond better sending the update twice
+    if(amp_control.input != 1) {    // diff is not selected 
+        setIndicator("se_sel.val", "diff_sel.val", amp_control.input);
+        amp_control.toggleRelay(&(amp_control.input));
+    }
+}
+
+// Output select posts button press event
+void trigger10() {
+    if(amp_control.output != 0) {
+        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+        amp_control.toggleRelay(&(amp_control.output));
+    }
+}
+
+// Output select speakon button press event
+void trigger11() {
+    if(amp_control.output != 1) {
+        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+        amp_control.toggleRelay(&(amp_control.output));
+    }
 }
 
 // Exit fan page

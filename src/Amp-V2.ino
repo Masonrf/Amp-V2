@@ -7,7 +7,7 @@ extern EasyNex nexDisplay;
 
 void setup() {
     pinMode(13, OUTPUT);
-    nexDisplay.begin(9600);
+    nexDisplay.begin(115200);
 
     delay(2000);
 }
