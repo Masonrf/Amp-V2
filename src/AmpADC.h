@@ -45,8 +45,6 @@ public:
     void printFFT();
     void printRMS();
 
-protected:
-
     float rmsL;     // in dB
     float rmsR;     // in dB
 

@@ -127,7 +127,9 @@ void AmpControl::faultISR(){
     if(reset) {
         return; // do not update during a reset
     }
-    fault = !fault;
+    // Done this way and not fault = !fault because sometimes interrupts collide a little bit
+    // Also since a low is a 0 and these pins are active lows, have to ! the read
+    fault = !digitalReadFast(FAULT_PIN);  
     updateCtrl = true;
 }
 
@@ -139,7 +141,9 @@ void AmpControl::clipISR() {
     if(reset) {
         return; // do not update during a reset
     }
-    clip = !clip;
+    // Done this way and not clip = !clip because sometimes interrupts collide a little bit
+    // Also since a low is a 0 and these pins are active lows, have to ! the read
+    clip = !digitalReadFast(CLIP_PIN);
     updateCtrl = true;
 }
 

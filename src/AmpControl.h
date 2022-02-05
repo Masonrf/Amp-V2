@@ -34,7 +34,7 @@
 
 
 class AmpControl {
-protected:
+public:
     AmpControl();
 
     volatile bool fault;  // 0 == no fault,    1 == fault
@@ -43,7 +43,7 @@ protected:
     bool output;          // 0 == SpeakOns,    1 == Posts
     volatile bool reset;
 
-    bool updateCtrl;     // Tell the display to update
+    volatile bool updateCtrl;     // Tell the display to update
 
     uint8_t fanDutyCycle;
 
