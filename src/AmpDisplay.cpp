@@ -5,38 +5,42 @@ AmpADC amp_adc;
 AmpControl amp_control;
 
 elapsedMillis displayRefreshTimer;
+bool periodicUpdates = true;
 
 // Tries to check for any commands in the queue and updates the display if necessary
 // There's a limit on how often the MCU can update the display so that the MCU
 // isn't constantly checking for updates and eating up cycles
 void refreshDisplay() {
     nexDisplay.NextionListen();
-/*
-    if(displayRefreshTimer >= 1000 / MAX_REFRESH_RATE) { // Get max number of milliseconds per frame
+
+    if( periodicUpdates && ( displayRefreshTimer >= (1000 / MAX_REFRESH_RATE) ) ) { // Get max number of milliseconds per frame
         displayRefreshTimer -= 1000 / MAX_REFRESH_RATE;
 
-        // Items that need constant updates on main page
-        if(nexDisplay.currentPageId == MAIN_PAGE) {
-            amp_adc.getRMS();  // calculate rms in dB
-            //printRMS();
-            nexDisplay.writeNum( "rms_left.val",  map(amp_adc.rmsL, 24, 54, 0, 100) );
-            nexDisplay.writeNum( "rms_right.val", map(amp_adc.rmsR, 24, 54, 0, 100) );
+        switch(nexDisplay.currentPageId) {
+            case MAIN_PAGE:
+                // Items that need constant updates on main page
+                amp_adc.getRMS();  // calculate rms in dB
+                //printRMS();
+                nexDisplay.writeNum( "rms_left.val",  map(amp_adc.rmsL, 24, 54, 0, 100) );
+                nexDisplay.writeNum( "rms_right.val", map(amp_adc.rmsR, 24, 54, 0, 100) );
 
-            // clip and fault signals. Probably don't need to poll here, but I'm lazy
-            
-        }
+                // clip and fault signals
+                if(amp_control.updateCtrl) {
+                    noInterrupts();     // dont want updateCtrl changing while sending data
+                    amp_control.updateCtrl = false;
+                    nexDisplay.writeNum("clip_ind.val", amp_control.clip);
+                    nexDisplay.writeNum("fault_ind.val", amp_control.fault);
+                    interrupts();
+                }
+                break;
 
-        // Items that only update occasionally for ALL pages
-        if(amp_control.updateCtrl) {
-            noInterrupts();     // dont want updateCtrl changing while sending data
-            amp_control.updateCtrl = false;
-            nexDisplay.writeNum("clip_ind.val", amp_control.clip);
-            nexDisplay.writeNum("fault_ind.val", amp_control.fault);
-            interrupts();
-            
+            default:
+                break;
         }
+        
+        
     }
-*/
+
 }
 
 
@@ -107,7 +111,7 @@ void trigger6() {
 
 // init ouput page
 void trigger7() {
-    setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+    setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
 }
 
 // init fan page
@@ -118,6 +122,16 @@ void trigger8() {
 // init fft page
 void trigger9() {
 
+}
+
+// enable periodic updates
+void trigger12() {
+    periodicUpdates = true;
+}
+
+// disable periodic updates
+void trigger13() {
+    periodicUpdates = false;
 }
 
 void setIndicator(String indicatorID, bool indicatorVar) {

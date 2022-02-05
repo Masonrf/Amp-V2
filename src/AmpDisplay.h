@@ -14,6 +14,7 @@
 // Refresh rate in frames per second
 #define MAX_REFRESH_RATE 30
 
+
 void refreshDisplay();
 
 
@@ -32,6 +33,8 @@ void trigger9();    // init fft page
 void trigger10();   // Output select posts button press event
 void trigger11();   // Output select speakon button press event
 
+void trigger12();   // enable constant refresh
+void trigger13();   // disable constant refresh
 void setIndicator(String indicatorID, bool indicatorVar);
 void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicatorVar);
 
