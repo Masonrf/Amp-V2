@@ -98,7 +98,8 @@ void trigger4() {
 
 // Fan slider move event
 void trigger5() {
-    amp_control.fanDutyCycle = map(nexDisplay.readNumber("fan_spd_ctrl.val"), 0, 100, 0, 255);
+    uint32_t readDutyCyle = nexDisplay.readNumber("fan_spd_ctrl.val");
+    amp_control.fanDutyCycle = map(readDutyCyle, 0, 100, 0, 255);
     analogWrite(FAN_PWM_PIN, amp_control.fanDutyCycle);
     nexDisplay.writeNum("fan_gauge.val", map(amp_control.fanDutyCycle, 0, 255, 0, 180));
 }
@@ -115,7 +116,7 @@ void trigger7() {
 
 // init fan page
 void trigger8() {
-
+    nexDisplay.writeNum("fan_gauge.val", map(amp_control.fanDutyCycle, 0, 255, 0, 180));
 }
 
 // init fft page
