@@ -14,15 +14,16 @@ void refreshDisplay() {
     nexDisplay.NextionListen();
 
     if( periodicUpdates && ( displayRefreshTimer >= (1000 / MAX_REFRESH_RATE) ) ) { // Get max number of milliseconds per frame
-        displayRefreshTimer -= 1000 / MAX_REFRESH_RATE;
+        displayRefreshTimer -= (1000 / MAX_REFRESH_RATE);
 
         switch(nexDisplay.currentPageId) {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
                 amp_adc.getRMS();  // calculate rms in dB
                 //printRMS();
-                nexDisplay.writeNum( "rms_left.val",  map(amp_adc.rmsL, 24, 54, 0, 100) );
-                nexDisplay.writeNum( "rms_right.val", map(amp_adc.rmsR, 24, 54, 0, 100) );
+
+                nexDisplay.writeNum( "rms_left.val", map((uint32_t)(amp_adc.rmsL), 0, 66, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
+                nexDisplay.writeNum( "rms_right.val", map((uint32_t)(amp_adc.rmsR), 0, 66, 0, 100) );   // values > 100 which bugs out the whole thing
 
                 // clip and fault signals
                 if(amp_control.updateCtrl) {
@@ -37,8 +38,6 @@ void refreshDisplay() {
             default:
                 break;
         }
-        
-        
     }
 
 }
