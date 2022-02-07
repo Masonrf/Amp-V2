@@ -1,128 +1,140 @@
 #include "AmpADC.h"
 
-AmpADC *AmpADC::instance;
+    // DMA Buffers and structures
+    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_1[BUFF_SIZE];
+    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_2[BUFF_SIZE];
+    AnalogBufferDMA abdma1(dma_adc_buff1_1, BUFF_SIZE, dma_adc_buff1_2, BUFF_SIZE);
 
+    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_1[BUFF_SIZE];
+    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_2[BUFF_SIZE];
+    AnalogBufferDMA abdma2(dma_adc_buff2_1, BUFF_SIZE, dma_adc_buff2_2, BUFF_SIZE);
+    
 AmpADC::AmpADC() {
-    instance = this;
     adc = new ADC();
-    buffIsReady = false;
-    buffLocation = 0;
+    
 
     ////// ADC0 /////
-    adc->adc0->setAveraging(AVERAGES); // set number of averages
-    adc->adc0->setResolution(RESOLUTION); // set bits of resolution
-    adc->adc0->setConversionSpeed(ADC_CONVERSION_SPEED::CONV_SPD); // change the conversion speed
-    adc->adc0->setSamplingSpeed(ADC_SAMPLING_SPEED::SAMPLE_SPD); // change the sampling speed
+    adc->adc0->setAveraging(ADC_AVGS); // set number of averages
+    adc->adc0->setResolution(ADC_RES); // set bits of resolution
+    adc->adc0->setConversionSpeed(ADC_CNV_SPD); // change the conversion speed
+    adc->adc0->setSamplingSpeed(ADC_SA_SPD); // change the sampling speed
     adc->adc0->recalibrate();
 
     ////// ADC1 /////
-    adc->adc1->setAveraging(AVERAGES); // set number of averages
-    adc->adc1->setResolution(RESOLUTION); // set bits of resolution
-    adc->adc1->setConversionSpeed(ADC_CONVERSION_SPEED::CONV_SPD); // change the conversion speed
-    adc->adc1->setSamplingSpeed(ADC_SAMPLING_SPEED::SAMPLE_SPD); // change the sampling speed
+    adc->adc1->setAveraging(ADC_AVGS); // set number of averages
+    adc->adc1->setResolution(ADC_RES); // set bits of resolution
+    adc->adc1->setConversionSpeed(ADC_CNV_SPD); // change the conversion speed
+    adc->adc1->setSamplingSpeed(ADC_SA_SPD); // change the sampling speed
     adc->adc1->recalibrate();
 
-    Timer.begin(triggerISR, 1000000.0 / SAMPLE_FREQ);
+    abdma1.init(adc, ADC_0/*, DMAMUX_SOURCE_ADC_ETC*/);
+    abdma2.init(adc, ADC_1/*, DMAMUX_SOURCE_ADC_ETC*/);
+
+    // Start the dma operation..
+    adc->adc0->startSingleRead(ADC_L_PIN); // call this to setup everything before the Timer starts, differential is also possible
+    adc->adc1->startSingleRead(ADC_R_PIN);
+
+    adc->adc0->startTimer(SAMPLE_RATE); // samples/sec
+    adc->adc1->startTimer(SAMPLE_RATE); // samples/sec
+
+    setWindowFunction(HAMMING);
+    // Initialize fft
+    arm_rfft_fast_init_f32(&f32_instance0, BUFF_SIZE);
+    arm_rfft_fast_init_f32(&f32_instance1, BUFF_SIZE);
 }
 
-void AmpADC::triggerISR() {
-    instance->adcISR();
-}
-
-void AmpADC::adcISR() {
-    if(buffIsReady == true) {
+void AmpADC::adc_task() {
+    if ( !(abdma1.interrupted() && abdma2.interrupted()) ) {
         return;
     }
-    // Weird things happen when you try to adcXBuff[buffLocation] = float(...anaglogRead... - max/2 + cal);
-    // So did it this way with tmp vars and that seems to have fixed it.
-    int16_t sampleL = adc->adc0->analogRead(ADC_L_PIN) - adc->adc0->getMaxValue() / 2 + CALIBRATION_OFFSET_L;
-    int16_t sampleR = adc->adc1->analogRead(ADC_R_PIN) - adc->adc1->getMaxValue() / 2 + CALIBRATION_OFFSET_R;
 
-    adc0Buff[buffLocation] = float(sampleL);
-    adc1Buff[buffLocation] = float(sampleR);
+    volatile uint16_t *pbuffer0 = abdma1.bufferLastISRFilled();
+    volatile uint16_t *end_pbuffer0 = pbuffer0 + abdma1.bufferCountLastISRFilled();
+    volatile uint16_t *pbuffer1 = abdma2.bufferLastISRFilled();
+    volatile uint16_t *end_pbuffer1 = pbuffer1 + abdma1.bufferCountLastISRFilled();
 
-    vImagL[buffLocation] = 0;
-    vImagR[buffLocation] = 0;
+    if ((uint32_t)pbuffer0 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer0, sizeof(dma_adc_buff1_1));
+    if ((uint32_t)pbuffer1 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer1, sizeof(dma_adc_buff1_1));
 
-    if(buffLocation < BUFF_SIZE - 1) {
-        buffLocation++;
-    }
-    else {
-        buffLocation = 0;
-        buffIsReady = true;
+    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE];
+    
+    // Copy DMA buffers to a work buffer
+    copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
+    copy_from_dma_buff_to_dsp_buff(pbuffer1, end_pbuffer1, workBuffer1, CALIBRATION_OFFSET_1);
+
+    // -------- Do not use pbuffers after this point. Use work buffers --------
+
+    // Get RMS values in dB
+    arm_rms_f32(workBuffer0, BUFF_SIZE, &rmsL);
+    arm_rms_f32(workBuffer1, BUFF_SIZE, &rmsR);
+    rmsL = 20 * log10f(rmsL);
+    rmsR = 20 * log10f(rmsR);
+
+    // Windows remove some of the errors/artifacts with doing FFTs of arrays of finite length
+    applyWindowToBuffer(workBuffer0);
+    applyWindowToBuffer(workBuffer1);
+
+    // Set up for FFT
+    // 32 bit float maths should be about the same speed as integer maths on Teensy 4. if double precision is required, its half speed of floats
+    // We can use real fft here instead of complex fft and cut computation time in half.
+    // The input data is all real. The output data is in complex form arr=[real0, imag0, real1, imag1,...]
+    // Here is a good example http://gaidi.ca/weblog/configuring-cmsis-dsp-package-and-performing-a-real-fft
+
+    // ooh math, shiny!!!!
+    arm_rfft_fast_f32(&f32_instance0, workBuffer0, fftOutput0, 0);
+    arm_rfft_fast_f32(&f32_instance1, workBuffer1, fftOutput1, 0);
+
+    // compute the magnitude and put it in the mag buffers
+    arm_cmplx_mag_f32(fftOutput0, mag0, BUFF_SIZE/2);
+    arm_cmplx_mag_f32(fftOutput1, mag1, BUFF_SIZE/2);
+}
+
+void AmpADC::copy_from_dma_buff_to_dsp_buff(volatile uint16_t *dmaBuff, volatile uint16_t *end_dmaBuff, float32_t *dspBuff, float32_t offset) {
+    volatile uint16_t *dmaBuff_ptr = dmaBuff;
+    float32_t *dspBuff_ptr = dspBuff;
+
+    offset += 2048.0;     // from unsigned 12 bit to signed values
+
+    while(dmaBuff_ptr < end_dmaBuff) {
+        *dspBuff_ptr = *dmaBuff_ptr - offset;   
+        dspBuff_ptr++;
+        dmaBuff_ptr++;
+        
     }
 }
 
-void AmpADC::printBuffs() {
-    if(!buffIsReady) {
-        return;
+void AmpADC::setWindowFunction(uint8_t windowType) {
+    const float32_t n = PI/(BUFF_SIZE - 1);
+    switch(windowType) {
+        case HAMMING:
+            for(uint16_t i = 0; i < BUFF_SIZE; i++) { window[i] = 0.54 - 0.46*cos(2*i*n); }
+            break;
+
+        case HANNING:
+            for(uint16_t i = 0; i < BUFF_SIZE; i++) { window[i] = 0.5 - 0.5*cos(2*i*n); }
+            break;
+
+        case BLACKMANHARRIS:
+            for(uint16_t i = 0; i < BUFF_SIZE; i++) { window[i] = 0.35875 - 0.48829*cos(2*i*n) + 0.14128*cos(4*i*n) - 0.01168*cos(6*i*n); }
+            break;
+
+        case FLATTOP:
+            for(uint16_t i = 0; i < BUFF_SIZE; i++) { window[i] = 0.21557895 - 0.41663158*cos(2*i*n) + 0.277263158*cos(4*i*n) - 0.083578947*cos(6*i*n) + 0.006947368*cos(8*i*n); }
+            break;
+        
+        default: // Rectangular
+            for(uint16_t i = 0; i < BUFF_SIZE; i++) { window[i] = 1; }
+            break;
     }
-    for (int i = 0; i < BUFF_SIZE; i++) {
-        Serial.print(adc0Buff[i], DEC);
-        Serial.print("\t");
-        Serial.print(adc1Buff[i], DEC);
-        Serial.println();
-    }
-    buffIsReady = false;
 }
 
-void AmpADC::getRMS() {
-    if(!buffIsReady) {
-        return;
-    }
-    // If you start to get rollover with larger buffer sizes, change these to 64 bit unsigned ints.
-    double sumL = 0, sumR = 0;
+void AmpADC::applyWindowToBuffer(float32_t *buffer) {
+    float32_t *windowPtr = window;
+    float32_t *bufferPtr = buffer;
+
     for(uint16_t i = 0; i < BUFF_SIZE; i++) {
-        sumL += adc0Buff[i] * adc0Buff[i];
-        sumR += adc1Buff[i] * adc1Buff[i];
+        *bufferPtr *= *windowPtr;
+        bufferPtr++;
+        windowPtr++;
     }
-
-    rmsL = 20 * log10( sqrt(sumL / BUFF_SIZE) );
-    rmsR = 20 * log10( sqrt(sumR / BUFF_SIZE) );
-
-    buffIsReady = false;
-}
-
-void AmpADC::printRMS() {
-    getRMS();
-
-    noInterrupts();
-    Serial.print(rmsL, DEC);
-    Serial.print("\t");
-    Serial.print(rmsR, DEC);
-    Serial.println();
-    interrupts();
-}
-
-void AmpADC::runFFT() {
-
-    if(!buffIsReady) {
-        return;
-    }
-
-    fftL.windowing(FFTWindow::Hamming, FFTDirection::Forward);
-    fftL.compute(FFTDirection::Forward);
-    fftL.complexToMagnitude();
-
-    fftR.windowing(FFTWindow::Hamming, FFTDirection::Forward);
-    fftR.compute(FFTDirection::Forward);
-    fftR.complexToMagnitude();
-
-    buffIsReady = false;
-}
-
-// Serial monitor is a bit whacky. Looks like all the data is there though...
-void AmpADC::printFFT() {
-    runFFT();
-
-    // noisr/isr and get rid of buffIsReady here???
-    noInterrupts();
-    for (int i = 0; i < BUFF_SIZE / 2; i++) {
-        Serial.print(adc0Buff[i], DEC);
-        Serial.print("\t");
-        Serial.print(adc1Buff[i], DEC);
-        Serial.println();
-    }
-    interrupts();
-
 }

@@ -15,6 +15,8 @@ void setup() {
 void loop() {
 
     refreshDisplay();
+    amp_adc.adc_task();
+
     if(ledTimer >= 1000) { // heartbeat led
         digitalWriteFast(13, !digitalReadFast(13));
         ledTimer = 0;
