@@ -20,8 +20,8 @@ void refreshDisplay() {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
 
-                nexDisplay.writeNum( "rms_left.val", map((uint32_t)(amp_adc.rmsL), 27, 66, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
-                nexDisplay.writeNum( "rms_right.val", map((uint32_t)(amp_adc.rmsR), 27, 66, 0, 100) );   // values > 100 which bugs out the whole thing
+                nexDisplay.writeNum( "rms_left.val", map_rms_to_display(amp_adc.rmsL, 27, 66, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
+                nexDisplay.writeNum( "rms_right.val", map_rms_to_display(amp_adc.rmsR, 27, 66, 0, 100) );   // values > 100 which bugs out the whole thing
 
                 // clip and fault signals
                 if(amp_control.updateCtrl) {
@@ -149,5 +149,19 @@ void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicato
     else {
         nexDisplay.writeNum(indicatorIdTrue, 0);
         nexDisplay.writeNum(indicatorIdFalse, 100);
+    }
+}
+
+uint32_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
+    uint32_t x = (uint32_t)input;
+
+    if(x > in_max) {
+        return out_max;
+    }
+    else if(x < in_min) {
+        return out_min;
+    }
+    else {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 }

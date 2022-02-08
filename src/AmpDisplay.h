@@ -39,4 +39,6 @@ void trigger13();   // disable constant refresh
 void setIndicator(String indicatorID, bool indicatorVar);
 void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicatorVar);
 
+uint32_t map_rms_to_display(float input, uint32_t fromMin, uint32_t fromMax, uint32_t toMin, uint32_t toMax);
+
 #endif
