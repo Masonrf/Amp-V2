@@ -20,8 +20,8 @@ void refreshDisplay() {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
 
-                nexDisplay.writeNum( "rms_left.val", map((uint32_t)(amp_adc.rmsL), 0, 66, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
-                nexDisplay.writeNum( "rms_right.val", map((uint32_t)(amp_adc.rmsR), 0, 66, 0, 100) );   // values > 100 which bugs out the whole thing
+                nexDisplay.writeNum( "rms_left.val", map((uint32_t)(amp_adc.rmsL), 27, 66, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
+                nexDisplay.writeNum( "rms_right.val", map((uint32_t)(amp_adc.rmsR), 27, 66, 0, 100) );   // values > 100 which bugs out the whole thing
 
                 // clip and fault signals
                 if(amp_control.updateCtrl) {

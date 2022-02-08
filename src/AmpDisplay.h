@@ -12,7 +12,7 @@
 #define FFT_PAGE        4
 
 // Refresh rate in frames per second
-#define MAX_REFRESH_RATE 30
+#define MAX_REFRESH_RATE 60
 
 
 void refreshDisplay();

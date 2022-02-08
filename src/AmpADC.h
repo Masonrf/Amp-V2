@@ -25,8 +25,8 @@
 #define ADC_CNV_SPD     ADC_CONVERSION_SPEED::VERY_HIGH_SPEED
 
 // These are just estimates based off the serial plotter
-#define CALIBRATION_OFFSET_0 15
-#define CALIBRATION_OFFSET_1 4
+#define CALIBRATION_OFFSET_0 -5
+#define CALIBRATION_OFFSET_1 -5
 
  // WARNING: larger buffer sizes cause problems with RMS. See function for details
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
@@ -61,6 +61,8 @@ private:
     // FFT variables
     float32_t fftOutput0[BUFF_SIZE], fftOutput1[BUFF_SIZE];
     arm_rfft_fast_instance_f32 f32_instance0, f32_instance1;
+
+    void printBuffers(bool print, uint16_t size, float32_t *buff0, float32_t *buff1 = nullptr);
 };
 
 

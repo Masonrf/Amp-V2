@@ -8,7 +8,7 @@
     DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_1[BUFF_SIZE];
     DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_2[BUFF_SIZE];
     AnalogBufferDMA abdma2(dma_adc_buff2_1, BUFF_SIZE, dma_adc_buff2_2, BUFF_SIZE);
-    
+
 AmpADC::AmpADC() {
     adc = new ADC();
     
@@ -62,6 +62,7 @@ void AmpADC::adc_task() {
     copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
     copy_from_dma_buff_to_dsp_buff(pbuffer1, end_pbuffer1, workBuffer1, CALIBRATION_OFFSET_1);
 
+    //printBuffers(true, BUFF_SIZE, workBuffer0, workBuffer1);
     // -------- Do not use pbuffers after this point. Use work buffers --------
 
     // Get RMS values in dB
@@ -136,5 +137,25 @@ void AmpADC::applyWindowToBuffer(float32_t *buffer) {
         *bufferPtr *= *windowPtr;
         bufferPtr++;
         windowPtr++;
+    }
+}
+
+void AmpADC::printBuffers(bool print, uint16_t size, float32_t *buff0, float32_t *buff1 = nullptr) {
+    if(print == true) {
+        if(buff1 == nullptr) {
+            for(int i = 0; i < size; i++) {
+                Serial.print(buff0[i]);
+                Serial.println();
+            }
+        }
+        else {
+            for(int i = 0; i < size; i++) {
+                Serial.print(buff0[i]);
+                Serial.print("\t");
+                Serial.print(buff1[i]);
+                Serial.println();
+            }
+        }
+        
     }
 }

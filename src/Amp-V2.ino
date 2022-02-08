@@ -9,6 +9,8 @@ void setup() {
     pinMode(13, OUTPUT);
     nexDisplay.begin(512000);
 
+    //Serial.begin(9600);
+
     delay(500);
 }
 
