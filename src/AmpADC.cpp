@@ -1,13 +1,13 @@
 #include "AmpADC.h"
 
-    // DMA Buffers and structures
-    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_1[BUFF_SIZE];
-    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_2[BUFF_SIZE];
-    AnalogBufferDMA abdma1(dma_adc_buff1_1, BUFF_SIZE, dma_adc_buff1_2, BUFF_SIZE);
+// DMA Buffers and structures
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_1[BUFF_SIZE];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff1_2[BUFF_SIZE];
+AnalogBufferDMA abdma1(dma_adc_buff1_1, BUFF_SIZE, dma_adc_buff1_2, BUFF_SIZE);
 
-    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_1[BUFF_SIZE];
-    DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_2[BUFF_SIZE];
-    AnalogBufferDMA abdma2(dma_adc_buff2_1, BUFF_SIZE, dma_adc_buff2_2, BUFF_SIZE);
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_1[BUFF_SIZE];
+DMAMEM static volatile uint16_t __attribute__((aligned(32))) dma_adc_buff2_2[BUFF_SIZE];
+AnalogBufferDMA abdma2(dma_adc_buff2_1, BUFF_SIZE, dma_adc_buff2_2, BUFF_SIZE);
 
 AmpADC::AmpADC() {
     adc = new ADC();
@@ -41,6 +41,9 @@ AmpADC::AmpADC() {
     // Initialize fft
     arm_rfft_fast_init_f32(&f32_instance0, BUFF_SIZE);
     arm_rfft_fast_init_f32(&f32_instance1, BUFF_SIZE);
+
+    arm_biquad_cascade_df2T_init_f32(&AWF_filtInst0, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state0);
+    arm_biquad_cascade_df2T_init_f32(&AWF_filtInst1, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state1);
 }
 
 void AmpADC::adc_task() {
@@ -56,7 +59,6 @@ void AmpADC::adc_task() {
     if ((uint32_t)pbuffer0 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer0, sizeof(dma_adc_buff1_1));
     if ((uint32_t)pbuffer1 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer1, sizeof(dma_adc_buff1_1));
 
-    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE];
     
     // Copy DMA buffers to a work buffer
     copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
@@ -65,15 +67,23 @@ void AmpADC::adc_task() {
     //printBuffers(true, BUFF_SIZE, workBuffer0, workBuffer1);
     // -------- Do not use pbuffers after this point. Use work buffers --------
 
+    // A-weighting
+    for(int i = 0; i < BUFF_SIZE; i++) {
+        workBuffer0[i] *= AWF_biquad_scale[0];  // scale the input value
+        workBuffer1[i] *= AWF_biquad_scale[0];
+    }
+    arm_biquad_cascade_df2T_f32(&AWF_filtInst0, workBuffer0, awfBuff0, BUFF_SIZE);
+    arm_biquad_cascade_df2T_f32(&AWF_filtInst1, workBuffer1, awfBuff1, BUFF_SIZE);
+
     // Get RMS values in dB
-    arm_rms_f32(workBuffer0, BUFF_SIZE, &rmsL);
-    arm_rms_f32(workBuffer1, BUFF_SIZE, &rmsR);
+    arm_rms_f32(awfBuff0, BUFF_SIZE, &rmsL);
+    arm_rms_f32(awfBuff1, BUFF_SIZE, &rmsR);
     rmsL = 20 * log10f(rmsL);
     rmsR = 20 * log10f(rmsR);
 
     // Windows remove some of the errors/artifacts with doing FFTs of arrays of finite length
-    applyWindowToBuffer(workBuffer0);
-    applyWindowToBuffer(workBuffer1);
+    applyWindowToBuffer(awfBuff0);
+    applyWindowToBuffer(awfBuff1);
 
     // Set up for FFT
     // 32 bit float maths should be about the same speed as integer maths on Teensy 4. if double precision is required, its half speed of floats
@@ -82,8 +92,8 @@ void AmpADC::adc_task() {
     // Here is a good example http://gaidi.ca/weblog/configuring-cmsis-dsp-package-and-performing-a-real-fft
 
     // ooh math, shiny!!!!
-    arm_rfft_fast_f32(&f32_instance0, workBuffer0, fftOutput0, 0);
-    arm_rfft_fast_f32(&f32_instance1, workBuffer1, fftOutput1, 0);
+    arm_rfft_fast_f32(&f32_instance0, awfBuff0, fftOutput0, 0);
+    arm_rfft_fast_f32(&f32_instance1, awfBuff1, fftOutput1, 0);
 
     // compute the magnitude and put it in the mag buffers
     arm_cmplx_mag_f32(fftOutput0, mag0, BUFF_SIZE/2);

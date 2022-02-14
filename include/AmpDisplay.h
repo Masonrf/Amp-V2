@@ -14,6 +14,8 @@
 // Refresh rate in frames per second
 #define MAX_REFRESH_RATE 60
 
+#define RMS_MIN_VAL_DB  26
+#define RMS_MAX_VAL_DB  66
 
 void refreshDisplay();
 
