@@ -8,6 +8,7 @@
 #include <DMAChannel.h>
 #include <arm_math.h>
 #include <arm_const_structs.h>
+#include "Filter.h"
 
 // Resolution in bits. T4.1 may not work with all values
 // For single-ended measurements: 8, 10, 12 or 16 bits. For differential measurements: 9, 11, 13 or 16 bits
