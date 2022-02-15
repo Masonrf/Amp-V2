@@ -9,6 +9,7 @@
 #include <arm_math.h>
 #include <arm_const_structs.h>
 #include "Filter.h"
+#include "AmpDisplay.h"
 
 // Resolution in bits. T4.1 may not work with all values
 // For single-ended measurements: 8, 10, 12 or 16 bits. For differential measurements: 9, 11, 13 or 16 bits
@@ -46,7 +47,7 @@ public:
     float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
 
     AmpADC();
-    void adc_task();
+    void adc_task(int currentPage);
 
 private:
     // Currently I have a bunch of different buffers that are really unneccessary. 

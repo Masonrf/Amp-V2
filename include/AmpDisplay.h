@@ -19,8 +19,6 @@
 
 void refreshDisplay();
 
-extern AmpADC amp_adc;
-
 void trigger0();    // Reset button press event
 void trigger1();    // Input select se button press event
 void trigger2();    // Input select diff button press event

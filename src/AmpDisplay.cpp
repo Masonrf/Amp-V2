@@ -24,6 +24,7 @@ void refreshDisplay() {
                 nexDisplay.writeNum( "rms_right.val", map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );   // values > 100 which bugs out the whole thing
 
                 // clip and fault signals
+                // may just want to remove the interrupts and poll these with a digitalReadFast. Would get rid of some of the weirdness with interrupts
                 if(amp_control.updateCtrl) {
                     noInterrupts();     // dont want updateCtrl changing while sending data
                     amp_control.updateCtrl = false;

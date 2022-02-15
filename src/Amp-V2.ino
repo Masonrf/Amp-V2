@@ -4,6 +4,7 @@
 elapsedMillis ledTimer;
 
 extern EasyNex nexDisplay;
+extern AmpADC amp_adc;
 
 void setup() {
     pinMode(13, OUTPUT);
@@ -17,7 +18,7 @@ void setup() {
 void loop() {
 
     refreshDisplay();
-    amp_adc.adc_task();
+    amp_adc.adc_task(nexDisplay.currentPageId);
 
     if(ledTimer >= 1000) { // heartbeat led
         digitalWriteFast(13, !digitalReadFast(13));
