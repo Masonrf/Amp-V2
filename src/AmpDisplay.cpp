@@ -116,6 +116,7 @@ void trigger7() {
 // init fan page
 void trigger8() {
     nexDisplay.writeNum("fan_gauge.val", map(amp_control.fanDutyCycle, 0, 255, 0, 180));
+    nexDisplay.writeNum("fan_spd_ctrl.val", map(amp_control.fanDutyCycle, 0, 255, 0, 100));
 }
 
 // init fft page
