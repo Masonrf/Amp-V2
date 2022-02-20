@@ -20,6 +20,10 @@
 
 #define SERIAL_PORT     Serial4
 
+#define FFT_L_COLOR         383
+#define FFT_R_COLOR         63553
+#define FFT_COMBINED_COLOR  36882
+
 void refreshDisplay();
 
 void trigger0();    // Reset button press event

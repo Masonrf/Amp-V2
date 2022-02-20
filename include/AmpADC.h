@@ -30,7 +30,8 @@
 #define CALIBRATION_OFFSET_0 -5
 #define CALIBRATION_OFFSET_1 -5
 
- // WARNING: larger buffer sizes cause problems with RMS. See function for details
+// WARNING: larger buffer sizes cause problems with RMS. See function for details.
+// Do not change theses values unless you plan to redo all the FFT display boxes. It's not tolerant to changes in any of these values  currently
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
 #define SAMPLE_RATE   48000
 #define NUM_BANDS     32
@@ -44,7 +45,7 @@ public:
     float rmsL;     // in dB
     float rmsR;     // in dB
 
-    uint8_t fftGraph0[NUM_BANDS-1], fftGraph1[NUM_BANDS-1]; // ignore the last band since its inaudible
+    uint8_t fftGraph0[NUM_BANDS-1], fftGraph1[NUM_BANDS-1]; // ignore the last band since its inaudible for 32 band 48kHz
 
     AmpADC();
     void adc_task(int currentPage);

@@ -6,6 +6,8 @@ AmpControl amp_control;
 
 elapsedMillis displayRefreshTimer;
 bool periodicUpdates = true;
+bool fftL = true;
+bool fftR = true;
 
 // Tries to check for any commands in the queue and updates the display if necessary
 // There's a limit on how often the MCU can update the display so that the MCU
@@ -36,8 +38,17 @@ void refreshDisplay() {
             
             case FFT_PAGE:  // probably want to not use delays
 
-                drawFFT(amp_adc.fftGraph0, 383);
-                drawFFT(amp_adc.fftGraph1, 63553);
+                if(fftL && fftR) {
+                    drawFFT(amp_adc.fftGraph0, FFT_L_COLOR, amp_adc.fftGraph1, FFT_R_COLOR, FFT_COMBINED_COLOR);
+                }
+                else if(fftL) {
+                    drawFFT(amp_adc.fftGraph0, FFT_L_COLOR);
+                }
+                else if(fftR) {
+                    drawFFT(amp_adc.fftGraph1, FFT_R_COLOR);
+                }
+                
+                
 
             default:
                 break;
@@ -97,7 +108,7 @@ void trigger3() {
 
 // Exit FFT page
 void trigger4() {
-    
+
 }
 
 // Fan slider move event
@@ -141,12 +152,12 @@ void trigger13() {
 
 // FFT L checkbox
 void trigger14() {
-
+    fftL = !fftL;
 }
 
 // FFT R checkbox
 void trigger15() {
-
+    fftR = !fftR;
 }
 
 
@@ -185,9 +196,10 @@ uint8_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32
     }
 }
 
+// X coord start values for each band. Tried to match the frequencies with the graph by hand
+const uint16_t BandXVals[NUM_BANDS] = {13, 68, 115, 145, 159, 184, 204, 219, 239, 253, 263, 278, 291, 305, 321, 333, 341, 351, 358, 369, 381, 396, 406, 418, 422, 428, 436, 444, 454, 462, 468};
 // draw one channel
 void drawFFT(uint8_t fftGraph[], uint16_t color) {
-    static uint16_t BandXVals[NUM_BANDS] = {13, 68, 115, 145, 159, 184, 204, 219, 239, 253, 263, 278, 291, 305, 321, 333, 341, 351, 358, 369, 381, 396, 406, 418, 422, 428, 436, 444, 454, 462, 468};
     nexDisplay.writeStr("ref 0");    // refresh screen
 
     for(int i = 0; i < NUM_BANDS - 2; i++) {
@@ -197,7 +209,18 @@ void drawFFT(uint8_t fftGraph[], uint16_t color) {
 
 // draw both channels
 void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t colorR, uint16_t colorCombined) {
+    nexDisplay.writeStr("ref 0");    // refresh screen
 
+    for(int i = 0; i < NUM_BANDS - 2; i++) {
+        if(fftGraphL[i] > fftGraphR[i]) {
+            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphL[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphL[i]-fftGraphR[i], colorL) );
+            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphR[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphR[i], colorCombined) );
+        }
+        else {
+            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphR[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphR[i]-fftGraphL[i], colorR) );
+            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphL[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphL[i], colorCombined) );
+        }
+    }
 }
 
 String fillRectCmd(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
