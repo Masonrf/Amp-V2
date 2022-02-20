@@ -217,7 +217,7 @@ void AmpADC::packMagIntoFFTGraph(float32_t mag[], uint8_t fftGraph[]) {
     // average into bins and convert to dB
     for(int i = 0; i < NUM_BANDS - 1; i++) {
         float32_t value = 20 * log10f( avgMagBins(lowBins[i], highBins[i], mag) );
-        fftGraph[i] = map_rms_to_display(value, 50, 150, 0, 184); // map rms to waveform height
+        fftGraph[i] = map_rms_to_display(value, 50, 124, 0, 184); // map rms to waveform height
     }
 }
 
