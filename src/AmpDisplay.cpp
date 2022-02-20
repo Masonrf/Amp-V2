@@ -1,6 +1,6 @@
 #include "AmpDisplay.h"
 
-EasyNex nexDisplay(Serial4);
+EasyNex nexDisplay(SERIAL_PORT);
 AmpADC amp_adc;
 AmpControl amp_control;
 
@@ -20,8 +20,8 @@ void refreshDisplay() {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
 
-                nexDisplay.writeNum( "rms_left.val", map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
-                nexDisplay.writeNum( "rms_right.val", map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );   // values > 100 which bugs out the whole thing
+                nexDisplay.writeNum( "rms_left.val", (uint32_t)map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
+                nexDisplay.writeNum( "rms_right.val", (uint32_t)map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );   // values > 100 which bugs out the whole thing
 
                 // clip and fault signals
                 // may just want to remove the interrupts and poll these with a digitalReadFast. Would get rid of some of the weirdness with interrupts
@@ -33,6 +33,11 @@ void refreshDisplay() {
                     interrupts();
                 }
                 break;
+            
+            case FFT_PAGE:  // probably want to not use delays
+
+                drawFFT(amp_adc.fftGraph0, 383);
+                drawFFT(amp_adc.fftGraph1, 63553);
 
             default:
                 break;
@@ -92,7 +97,7 @@ void trigger3() {
 
 // Exit FFT page
 void trigger4() {
-
+    
 }
 
 // Fan slider move event
@@ -134,6 +139,17 @@ void trigger13() {
     periodicUpdates = false;
 }
 
+// FFT L checkbox
+void trigger14() {
+
+}
+
+// FFT R checkbox
+void trigger15() {
+
+}
+
+
 void setIndicator(String indicatorID, bool indicatorVar) {
     if(indicatorVar) {
         nexDisplay.writeNum(indicatorID, 100);
@@ -154,7 +170,8 @@ void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicato
     }
 }
 
-uint32_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
+// a slightly modified map() function for use with RMS levels in dB
+uint8_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
     uint32_t x = (uint32_t)input;
 
     if(x > in_max) {
@@ -166,4 +183,24 @@ uint32_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint3
     else {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
+}
+
+// draw one channel
+void drawFFT(uint8_t fftGraph[], uint16_t color) {
+    static uint16_t BandXVals[NUM_BANDS] = {13, 68, 115, 145, 159, 184, 204, 219, 239, 253, 263, 278, 291, 305, 321, 333, 341, 351, 358, 369, 381, 396, 406, 418, 422, 428, 436, 444, 454, 462, 468};
+    nexDisplay.writeStr("ref 0");    // refresh screen
+
+    for(int i = 0; i < NUM_BANDS - 2; i++) {
+        nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraph[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraph[i], color) );
+    }
+}
+
+// draw both channels
+void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t colorR, uint16_t colorCombined) {
+
+}
+
+String fillRectCmd(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    // "fill x,y,w,h,color"
+    return "fill " + String(x) + "," + String(y) + "," + String(w) + "," + String(h) + "," + String(color);
 }

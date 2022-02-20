@@ -8,7 +8,7 @@ extern AmpADC amp_adc;
 
 void setup() {
     pinMode(13, OUTPUT);
-    nexDisplay.begin(512000);
+    nexDisplay.begin(921600);
 
     //Serial.begin(9600);
 

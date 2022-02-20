@@ -33,7 +33,7 @@
  // WARNING: larger buffer sizes cause problems with RMS. See function for details
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
 #define SAMPLE_RATE   48000
-#define NUM_BINS      64
+#define NUM_BANDS     32
 
 #define ADC_L_PIN     14
 #define ADC_R_PIN     15
@@ -44,7 +44,7 @@ public:
     float rmsL;     // in dB
     float rmsR;     // in dB
 
-    float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
+    uint8_t fftGraph0[NUM_BANDS-1], fftGraph1[NUM_BANDS-1]; // ignore the last band since its inaudible
 
     AmpADC();
     void adc_task(int currentPage);
@@ -69,7 +69,10 @@ private:
 
     // FFT variables
     float32_t fftOutput0[BUFF_SIZE], fftOutput1[BUFF_SIZE];
+    float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
     arm_rfft_fast_instance_f32 f32_instance0, f32_instance1;
+    void packMagIntoFFTGraph(float32_t mag[], uint8_t fftGraph[]);
+    float32_t avgMagBins(uint16_t lowBin, uint16_t highBin, float32_t mag[]);
 
     void printBuffers(bool print, uint16_t size, float32_t *buff0, float32_t *buff1 = nullptr);
 };

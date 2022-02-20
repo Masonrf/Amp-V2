@@ -12,10 +12,13 @@
 #define FFT_PAGE        4
 
 // Refresh rate in frames per second
-#define MAX_REFRESH_RATE 60
+// probably can't really go higher than this for FFT page purposes
+#define MAX_REFRESH_RATE 20
 
 #define RMS_MIN_VAL_DB  26
 #define RMS_MAX_VAL_DB  66
+
+#define SERIAL_PORT     Serial4
 
 void refreshDisplay();
 
@@ -36,9 +39,16 @@ void trigger11();   // Output select speakon button press event
 
 void trigger12();   // enable constant refresh
 void trigger13();   // disable constant refresh
+
+void trigger14();   // FFT L checkbox
+void trigger15();   // FFT R checkbox
+
 void setIndicator(String indicatorID, bool indicatorVar);
 void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicatorVar);
 
-uint32_t map_rms_to_display(float input, uint32_t fromMin, uint32_t fromMax, uint32_t toMin, uint32_t toMax);
+uint8_t map_rms_to_display(float input, uint32_t fromMin, uint32_t fromMax, uint32_t toMin, uint32_t toMax);
+void drawFFT(uint8_t fftGraph[], uint16_t color);
+void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t colorR, uint16_t colorCombined);
+String fillRectCmd(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 #endif
