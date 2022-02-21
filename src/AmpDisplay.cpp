@@ -196,14 +196,13 @@ uint8_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32
     }
 }
 
-// X coord start values for each band. Tried to match the frequencies with the graph by hand
-const uint16_t BandXVals[NUM_BANDS] = {13, 68, 115, 145, 159, 184, 204, 219, 239, 253, 263, 278, 291, 305, 321, 333, 341, 351, 358, 369, 381, 396, 406, 418, 422, 428, 436, 444, 454, 462, 468};
+// split into roughly 1/2 octave bands: https://courses.physics.illinois.edu/phys406/sp2017/Lab_Handouts/Octave_Bands.pdf
 // draw one channel
 void drawFFT(uint8_t fftGraph[], uint16_t color) {
     nexDisplay.writeStr("ref 0");    // refresh screen
 
-    for(int i = 0; i < NUM_BANDS - 2; i++) {
-        nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraph[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraph[i], color) );
+    for(int i = 0; i < NUM_BANDS - 1; i++) {
+        nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraph[i], FFT_BAND_WIDTH_PX - 1, fftGraph[i], color) );
     }
 }
 
@@ -211,14 +210,14 @@ void drawFFT(uint8_t fftGraph[], uint16_t color) {
 void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t colorR, uint16_t colorCombined) {
     nexDisplay.writeStr("ref 0");    // refresh screen
 
-    for(int i = 0; i < NUM_BANDS - 2; i++) {
+    for(int i = 0; i < NUM_BANDS - 1; i++) {
         if(fftGraphL[i] > fftGraphR[i]) {
-            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphL[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphL[i]-fftGraphR[i], colorL) );
-            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphR[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphR[i], colorCombined) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphL[i], FFT_BAND_WIDTH_PX - 1, fftGraphL[i]-fftGraphR[i], colorL) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphR[i], FFT_BAND_WIDTH_PX - 1, fftGraphR[i], colorCombined) );
         }
         else {
-            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphR[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphR[i]-fftGraphL[i], colorR) );
-            nexDisplay.writeStr( fillRectCmd(BandXVals[i], 250-fftGraphL[i], BandXVals[i + 1] - BandXVals[i] - 1, fftGraphL[i], colorCombined) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphR[i], FFT_BAND_WIDTH_PX - 1, fftGraphR[i]-fftGraphL[i], colorR) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphL[i], FFT_BAND_WIDTH_PX - 1, fftGraphL[i], colorCombined) );
         }
     }
 }

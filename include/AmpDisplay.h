@@ -13,7 +13,8 @@
 
 // Refresh rate in frames per second
 // probably can't really go higher than this for FFT page purposes
-#define MAX_REFRESH_RATE 20
+// Keep at 30. For some reason 30 causes the least tearing out of all the fps values I have tried.
+#define MAX_REFRESH_RATE 30
 
 #define RMS_MIN_VAL_DB  26
 #define RMS_MAX_VAL_DB  66
@@ -23,6 +24,8 @@
 #define FFT_L_COLOR         383
 #define FFT_R_COLOR         63553
 #define FFT_COMBINED_COLOR  36882
+#define FFT_START_X_COORD   13
+#define FFT_BAND_WIDTH_PX   23
 
 void refreshDisplay();
 

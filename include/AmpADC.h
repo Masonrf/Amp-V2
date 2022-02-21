@@ -8,7 +8,6 @@
 #include <DMAChannel.h>
 #include <arm_math.h>
 #include <arm_const_structs.h>
-#include "Filter.h"
 #include "AmpDisplay.h"
 
 // Resolution in bits. T4.1 may not work with all values
@@ -33,8 +32,12 @@
 // WARNING: larger buffer sizes cause problems with RMS. See function for details.
 // Do not change theses values unless you plan to redo all the FFT display boxes. It's not tolerant to changes in any of these values  currently
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
-#define SAMPLE_RATE   48000
-#define NUM_BANDS     32
+
+#define SAMPLE_RATE   44100
+// this needs to be included after SAMPLE_RATE because of the if preprocessor statements
+#include "Filter.h"
+
+#define NUM_BANDS     21
 
 #define ADC_L_PIN     14
 #define ADC_R_PIN     15
