@@ -70,19 +70,17 @@ void AmpADC::adc_task(int currentPage) {
 
     switch(currentPage) {
         case MAIN_PAGE:
-
-
             // A-weighting
             for(int i = 0; i < BUFF_SIZE; i++) {
                 workBuffer0[i] *= AWF_biquad_scale[0];  // scale the input value
                 workBuffer1[i] *= AWF_biquad_scale[0];
             }
-            arm_biquad_cascade_df2T_f32(&AWF_filtInst0, workBuffer0, awfBuff0, BUFF_SIZE);
-            arm_biquad_cascade_df2T_f32(&AWF_filtInst1, workBuffer1, awfBuff1, BUFF_SIZE);
+            arm_biquad_cascade_df2T_f32(&AWF_filtInst0, workBuffer0, workBuffer2, BUFF_SIZE);
+            arm_biquad_cascade_df2T_f32(&AWF_filtInst1, workBuffer1, workBuffer3, BUFF_SIZE);
 
             // Get RMS values in dB
-            arm_rms_f32(awfBuff0, BUFF_SIZE, &rmsL);
-            arm_rms_f32(awfBuff1, BUFF_SIZE, &rmsR);
+            arm_rms_f32(workBuffer2, BUFF_SIZE, &rmsL);
+            arm_rms_f32(workBuffer3, BUFF_SIZE, &rmsR);
             rmsL = 20 * log10f(rmsL);
             rmsR = 20 * log10f(rmsR);
             break;
@@ -99,12 +97,12 @@ void AmpADC::adc_task(int currentPage) {
             // Here is a good example http://gaidi.ca/weblog/configuring-cmsis-dsp-package-and-performing-a-real-fft
 
             // ooh math, shiny!!!!
-            arm_rfft_fast_f32(&f32_instance0, workBuffer0, fftOutput0, 0);
-            arm_rfft_fast_f32(&f32_instance1, workBuffer1, fftOutput1, 0);
+            arm_rfft_fast_f32(&f32_instance0, workBuffer0, workBuffer2, 0);
+            arm_rfft_fast_f32(&f32_instance1, workBuffer1, workBuffer3, 0);
 
             // compute the magnitude and put it in the mag buffers
-            arm_cmplx_mag_f32(fftOutput0, mag0, BUFF_SIZE/2);
-            arm_cmplx_mag_f32(fftOutput1, mag1, BUFF_SIZE/2);
+            arm_cmplx_mag_f32(workBuffer2, mag0, BUFF_SIZE/2);
+            arm_cmplx_mag_f32(workBuffer3, mag1, BUFF_SIZE/2);
 
             // Pack the magnitudes into something usable for the graph
             packMagIntoFFTGraph(mag0, fftGraph0);
@@ -132,6 +130,7 @@ void AmpADC::copy_from_dma_buff_to_dsp_buff(volatile uint16_t *dmaBuff, volatile
     }
 }
 
+// Compute the window
 void AmpADC::setWindowFunction(uint8_t windowType) {
     const float32_t n = PI/(BUFF_SIZE - 1);
     switch(windowType) {
@@ -157,6 +156,7 @@ void AmpADC::setWindowFunction(uint8_t windowType) {
     }
 }
 
+// Apply the window to the specified buffer
 void AmpADC::applyWindowToBuffer(float32_t *buffer) {
     float32_t *windowPtr = window;
     float32_t *bufferPtr = buffer;
@@ -181,6 +181,7 @@ void AmpADC::packMagIntoFFTGraph(float32_t mag[], uint8_t fftGraph[]) {
     }
 }
 
+// Average multiple bins together
 float32_t AmpADC::avgMagBins(uint16_t lowBin, uint16_t highBin, float32_t mag[]) {
     /* who needs input sanitization anyways? Live life on the edge...
     if(lowBin > highBin || highBin > BUFF_SIZE/2) { // inputs need to make sense
@@ -200,6 +201,7 @@ float32_t AmpADC::avgMagBins(uint16_t lowBin, uint16_t highBin, float32_t mag[])
     
 }
 
+// Debug only. Print out buffers to the serial console
 void AmpADC::printBuffers(bool print, uint16_t size, float32_t *buff0, float32_t *buff1 = nullptr) {
     if(print == true) {
         if(buff1 == nullptr) {

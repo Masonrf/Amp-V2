@@ -1,3 +1,6 @@
+/*
+ *  Functions related to the display for the amplifier
+ */ 
 #ifndef AmpDisplay_h
 #define AmpDisplay_h
 

@@ -44,7 +44,7 @@ AmpControl::AmpControl() {
 }
 
 void AmpControl::toggleRelay(bool *toggle) {
-    // A disabling the amp is necessary to prevent popping when switching the relays
+    // Disabling the amp is necessary to prevent popping when switching the relays
     startReset();
 
     if(toggle == &input) { // If passed the input bool, ...

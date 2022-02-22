@@ -7,7 +7,9 @@
 
 /*  A-weighting filter coeffs (AWF)
  *  http://gaidi.ca/weblog/implementing-a-biquad-cascade-iir-filter-on-a-cortex-m4#
- *  This is a Direct Form II Transposed at Fs = 48kHz
+ *  This is a Direct Form II Transposed
+ * 
+ *  See the included matlab file for how these values were calculated
  */
 
 #define AWF_IIR_ORDER       6

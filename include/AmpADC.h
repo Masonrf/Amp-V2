@@ -1,3 +1,7 @@
+/*
+ *  Functions related to the ADC input and DSP operations for the amplifier
+ */
+
 #ifndef AMPADC_H
 #define AMPADC_H
 
@@ -54,16 +58,13 @@ public:
     void adc_task(int currentPage);
 
 private:
-    // Currently I have a bunch of different buffers that aren't really unneccessary. 
-    // Should probably move to two workBuffers per channel
     ADC *adc;
 
     void copy_from_dma_buff_to_dsp_buff(volatile uint16_t *dmaBuff, volatile uint16_t *end_dmaBuff, float32_t *dspBuff, float32_t offset);
-    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE];
+    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE], workBuffer2[BUFF_SIZE], workBuffer3[BUFF_SIZE];
 
     // A-Weighting Filter (AWF) 
     arm_biquad_cascade_df2T_instance_f32 AWF_filtInst0, AWF_filtInst1;
-    float32_t awfBuff0[BUFF_SIZE], awfBuff1[BUFF_SIZE];
 
     // Window types. Google these if you have questions or want to add more.
     float32_t window[BUFF_SIZE];
@@ -72,7 +73,6 @@ private:
     void applyWindowToBuffer(float32_t *buffer);
 
     // FFT variables
-    float32_t fftOutput0[BUFF_SIZE], fftOutput1[BUFF_SIZE];
     float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
     arm_rfft_fast_instance_f32 f32_instance0, f32_instance1;
     void packMagIntoFFTGraph(float32_t mag[], uint8_t fftGraph[]);
