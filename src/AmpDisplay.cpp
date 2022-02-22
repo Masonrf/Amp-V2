@@ -22,8 +22,8 @@ void refreshDisplay() {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
 
-                nexDisplay.writeNum( "rms_left.val", (uint32_t)map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
-                nexDisplay.writeNum( "rms_right.val", (uint32_t)map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );   // values > 100 which bugs out the whole thing
+                nexDisplay.writeNum( "rms_left.val", (uint32_t)map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );
+                nexDisplay.writeNum( "rms_right.val", (uint32_t)map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );
 
                 // clip and fault signals
                 // may just want to remove the interrupts and poll these with a digitalReadFast. Would get rid of some of the weirdness with interrupts
@@ -36,7 +36,7 @@ void refreshDisplay() {
                 }
                 break;
             
-            case FFT_PAGE:  // probably want to not use delays
+            case FFT_PAGE:
 
                 if(fftL && fftR) {
                     drawFFT(amp_adc.fftGraph0, FFT_L_COLOR, amp_adc.fftGraph1, FFT_R_COLOR, FFT_COMBINED_COLOR);
@@ -81,16 +81,16 @@ void trigger2() {
 
 // Output select posts button press event
 void trigger10() {
-    if(amp_control.output != 0) {
-        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+    if(amp_control.output != 1) {
+        setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
         amp_control.toggleRelay(&(amp_control.output));
     }
 }
 
 // Output select speakon button press event
 void trigger11() {
-    if(amp_control.output != 1) {
-        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+    if(amp_control.output != 0) {
+        setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
         amp_control.toggleRelay(&(amp_control.output));
     }
 }
@@ -99,9 +99,7 @@ void trigger11() {
 void trigger3() {
     /*
      * I have the MCU to write to EEPROM whenever it switches off the fan page
-     * in order to keep number of writes to a minimum. In the future, it
-     *  may be better to just set a timer to detect if its been awhile since
-     * the fanDutyCycle has been updated
+     * in order to keep number of writes to a minimum.
      */
     EEPROM.put(EEPROM_BASE_ADDR + EEPROM_FAN_ADDR, amp_control.fanDutyCycle);
 }
@@ -126,7 +124,7 @@ void trigger6() {
 
 // init ouput page
 void trigger7() {
-    setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
+    setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
 }
 
 // init fan page
@@ -182,6 +180,7 @@ void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicato
 }
 
 // a slightly modified map() function for use with RMS levels in dB
+// This is a little bit safer since the display has hard min/max values for some objects and the normal map() function can give >max and <min values
 uint8_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
     uint32_t x = (uint32_t)input;
 
@@ -222,6 +221,7 @@ void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t
     }
 }
 
+// Create the command to draw a filled rectangle
 String fillRectCmd(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
     // "fill x,y,w,h,color"
     return "fill " + String(x) + "," + String(y) + "," + String(w) + "," + String(h) + "," + String(color);

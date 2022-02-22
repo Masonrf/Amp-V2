@@ -10,7 +10,7 @@
 #include <arm_const_structs.h>
 #include "AmpDisplay.h"
 
-// Resolution in bits. T4.1 may not work with all values
+// Resolution in bits. T4 may not work with all values
 // For single-ended measurements: 8, 10, 12 or 16 bits. For differential measurements: 9, 11, 13 or 16 bits
 #define ADC_RES         12
 
@@ -54,7 +54,7 @@ public:
     void adc_task(int currentPage);
 
 private:
-    // Currently I have a bunch of different buffers that are really unneccessary. 
+    // Currently I have a bunch of different buffers that aren't really unneccessary. 
     // Should probably move to two workBuffers per channel
     ADC *adc;
 

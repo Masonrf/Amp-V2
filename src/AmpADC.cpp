@@ -14,17 +14,17 @@ AmpADC::AmpADC() {
     
 
     ////// ADC0 /////
-    adc->adc0->setAveraging(ADC_AVGS); // set number of averages
-    adc->adc0->setResolution(ADC_RES); // set bits of resolution
+    adc->adc0->setAveraging(ADC_AVGS);          // set number of averages
+    adc->adc0->setResolution(ADC_RES);          // set bits of resolution
     adc->adc0->setConversionSpeed(ADC_CNV_SPD); // change the conversion speed
-    adc->adc0->setSamplingSpeed(ADC_SA_SPD); // change the sampling speed
+    adc->adc0->setSamplingSpeed(ADC_SA_SPD);    // change the sampling speed
     adc->adc0->recalibrate();
 
     ////// ADC1 /////
-    adc->adc1->setAveraging(ADC_AVGS); // set number of averages
-    adc->adc1->setResolution(ADC_RES); // set bits of resolution
+    adc->adc1->setAveraging(ADC_AVGS);          // set number of averages
+    adc->adc1->setResolution(ADC_RES);          // set bits of resolution
     adc->adc1->setConversionSpeed(ADC_CNV_SPD); // change the conversion speed
-    adc->adc1->setSamplingSpeed(ADC_SA_SPD); // change the sampling speed
+    adc->adc1->setSamplingSpeed(ADC_SA_SPD);    // change the sampling speed
     adc->adc1->recalibrate();
 
     abdma1.init(adc, ADC_0/*, DMAMUX_SOURCE_ADC_ETC*/);
@@ -38,10 +38,12 @@ AmpADC::AmpADC() {
     adc->adc1->startTimer(SAMPLE_RATE); // samples/sec
 
     setWindowFunction(HAMMING);
-    // Initialize fft
+    
+    // Initialize FFT
     arm_rfft_fast_init_f32(&f32_instance0, BUFF_SIZE);
     arm_rfft_fast_init_f32(&f32_instance1, BUFF_SIZE);
 
+    // Initialize AWF
     arm_biquad_cascade_df2T_init_f32(&AWF_filtInst0, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state0);
     arm_biquad_cascade_df2T_init_f32(&AWF_filtInst1, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state1);
 
@@ -60,14 +62,15 @@ void AmpADC::adc_task(int currentPage) {
     if ((uint32_t)pbuffer0 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer0, sizeof(dma_adc_buff1_1));
     if ((uint32_t)pbuffer1 >= 0x20200000u)  arm_dcache_delete((void*)pbuffer1, sizeof(dma_adc_buff1_1));
 
-
+    // Copy DMA buffers to a work buffer
+    copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
+    copy_from_dma_buff_to_dsp_buff(pbuffer1, end_pbuffer1, workBuffer1, CALIBRATION_OFFSET_1);
+    
     //printBuffers(true, BUFF_SIZE, workBuffer0, workBuffer1);
 
     switch(currentPage) {
         case MAIN_PAGE:
-            // Copy DMA buffers to a work buffer
-            copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
-            copy_from_dma_buff_to_dsp_buff(pbuffer1, end_pbuffer1, workBuffer1, CALIBRATION_OFFSET_1);
+
 
             // A-weighting
             for(int i = 0; i < BUFF_SIZE; i++) {
@@ -85,10 +88,6 @@ void AmpADC::adc_task(int currentPage) {
             break;
         
         case FFT_PAGE:
-            // Copy DMA buffers to a work buffer
-            copy_from_dma_buff_to_dsp_buff(pbuffer0, end_pbuffer0, workBuffer0, CALIBRATION_OFFSET_0);
-            copy_from_dma_buff_to_dsp_buff(pbuffer1, end_pbuffer1, workBuffer1, CALIBRATION_OFFSET_1);
-
             // Windows remove some of the errors/artifacts with doing FFTs of arrays of finite length
             applyWindowToBuffer(workBuffer0);
             applyWindowToBuffer(workBuffer1);
@@ -107,6 +106,7 @@ void AmpADC::adc_task(int currentPage) {
             arm_cmplx_mag_f32(fftOutput0, mag0, BUFF_SIZE/2);
             arm_cmplx_mag_f32(fftOutput1, mag1, BUFF_SIZE/2);
 
+            // Pack the magnitudes into something usable for the graph
             packMagIntoFFTGraph(mag0, fftGraph0);
             packMagIntoFFTGraph(mag1, fftGraph1);
 
