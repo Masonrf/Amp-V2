@@ -1,3 +1,7 @@
+/*
+ *  Functions related to the ADC input and DSP operations for the amplifier
+ */
+
 #ifndef AMPADC_H
 #define AMPADC_H
 
@@ -8,9 +12,9 @@
 #include <DMAChannel.h>
 #include <arm_math.h>
 #include <arm_const_structs.h>
-#include "Filter.h"
+#include "AmpDisplay.h"
 
-// Resolution in bits. T4.1 may not work with all values
+// Resolution in bits. T4 may not work with all values
 // For single-ended measurements: 8, 10, 12 or 16 bits. For differential measurements: 9, 11, 13 or 16 bits
 #define ADC_RES         12
 
@@ -29,10 +33,15 @@
 #define CALIBRATION_OFFSET_0 -5
 #define CALIBRATION_OFFSET_1 -5
 
- // WARNING: larger buffer sizes cause problems with RMS. See function for details
+// WARNING: larger buffer sizes cause problems with RMS. See function for details.
+// Do not change theses values unless you plan to redo all the FFT display boxes. It's not tolerant to changes in any of these values  currently
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
-#define SAMPLE_RATE   48000
-#define NUM_BINS      64
+
+#define SAMPLE_RATE   44100
+// this needs to be included after SAMPLE_RATE because of the if preprocessor statements
+#include "Filter.h"
+
+#define NUM_BANDS     21
 
 #define ADC_L_PIN     14
 #define ADC_R_PIN     15
@@ -43,22 +52,19 @@ public:
     float rmsL;     // in dB
     float rmsR;     // in dB
 
-    float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
+    uint8_t fftGraph0[NUM_BANDS-1], fftGraph1[NUM_BANDS-1]; // ignore the last band since its inaudible for 32 band 48kHz
 
     AmpADC();
-    void adc_task();
+    void adc_task(int currentPage);
 
 private:
-    // Currently I have a bunch of different buffers that are really unneccessary. 
-    // Should probably move to two workBuffers per channel
     ADC *adc;
 
     void copy_from_dma_buff_to_dsp_buff(volatile uint16_t *dmaBuff, volatile uint16_t *end_dmaBuff, float32_t *dspBuff, float32_t offset);
-    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE];
+    float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE], workBuffer2[BUFF_SIZE], workBuffer3[BUFF_SIZE];
 
     // A-Weighting Filter (AWF) 
     arm_biquad_cascade_df2T_instance_f32 AWF_filtInst0, AWF_filtInst1;
-    float32_t awfBuff0[BUFF_SIZE], awfBuff1[BUFF_SIZE];
 
     // Window types. Google these if you have questions or want to add more.
     float32_t window[BUFF_SIZE];
@@ -67,8 +73,10 @@ private:
     void applyWindowToBuffer(float32_t *buffer);
 
     // FFT variables
-    float32_t fftOutput0[BUFF_SIZE], fftOutput1[BUFF_SIZE];
+    float32_t mag0[BUFF_SIZE/2], mag1[BUFF_SIZE/2];
     arm_rfft_fast_instance_f32 f32_instance0, f32_instance1;
+    void packMagIntoFFTGraph(float32_t mag[], uint8_t fftGraph[]);
+    float32_t avgMagBins(uint16_t lowBin, uint16_t highBin, float32_t mag[]);
 
     void printBuffers(bool print, uint16_t size, float32_t *buff0, float32_t *buff1 = nullptr);
 };

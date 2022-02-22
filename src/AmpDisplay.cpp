@@ -1,11 +1,13 @@
 #include "AmpDisplay.h"
 
-EasyNex nexDisplay(Serial4);
+EasyNex nexDisplay(SERIAL_PORT);
 AmpADC amp_adc;
 AmpControl amp_control;
 
 elapsedMillis displayRefreshTimer;
 bool periodicUpdates = true;
+bool fftL = true;
+bool fftR = true;
 
 // Tries to check for any commands in the queue and updates the display if necessary
 // There's a limit on how often the MCU can update the display so that the MCU
@@ -20,10 +22,11 @@ void refreshDisplay() {
             case MAIN_PAGE:
                 // Items that need constant updates on main page
 
-                nexDisplay.writeNum( "rms_left.val", map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );    // These need a max of about 66dB otherwise it sends the display
-                nexDisplay.writeNum( "rms_right.val", map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );   // values > 100 which bugs out the whole thing
+                nexDisplay.writeNum( "rms_left.val", (uint32_t)map_rms_to_display(amp_adc.rmsL, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );
+                nexDisplay.writeNum( "rms_right.val", (uint32_t)map_rms_to_display(amp_adc.rmsR, RMS_MIN_VAL_DB, RMS_MAX_VAL_DB, 0, 100) );
 
                 // clip and fault signals
+                // may just want to remove the interrupts and poll these with a digitalReadFast. Would get rid of some of the weirdness with interrupts
                 if(amp_control.updateCtrl) {
                     noInterrupts();     // dont want updateCtrl changing while sending data
                     amp_control.updateCtrl = false;
@@ -32,6 +35,20 @@ void refreshDisplay() {
                     interrupts();
                 }
                 break;
+            
+            case FFT_PAGE:
+
+                if(fftL && fftR) {
+                    drawFFT(amp_adc.fftGraph0, FFT_L_COLOR, amp_adc.fftGraph1, FFT_R_COLOR, FFT_COMBINED_COLOR);
+                }
+                else if(fftL) {
+                    drawFFT(amp_adc.fftGraph0, FFT_L_COLOR);
+                }
+                else if(fftR) {
+                    drawFFT(amp_adc.fftGraph1, FFT_R_COLOR);
+                }
+                
+                
 
             default:
                 break;
@@ -64,16 +81,16 @@ void trigger2() {
 
 // Output select posts button press event
 void trigger10() {
-    if(amp_control.output != 0) {
-        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+    if(amp_control.output != 1) {
+        setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
         amp_control.toggleRelay(&(amp_control.output));
     }
 }
 
 // Output select speakon button press event
 void trigger11() {
-    if(amp_control.output != 1) {
-        setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
+    if(amp_control.output != 0) {
+        setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
         amp_control.toggleRelay(&(amp_control.output));
     }
 }
@@ -82,9 +99,7 @@ void trigger11() {
 void trigger3() {
     /*
      * I have the MCU to write to EEPROM whenever it switches off the fan page
-     * in order to keep number of writes to a minimum. In the future, it
-     *  may be better to just set a timer to detect if its been awhile since
-     * the fanDutyCycle has been updated
+     * in order to keep number of writes to a minimum.
      */
     EEPROM.put(EEPROM_BASE_ADDR + EEPROM_FAN_ADDR, amp_control.fanDutyCycle);
 }
@@ -109,12 +124,13 @@ void trigger6() {
 
 // init ouput page
 void trigger7() {
-    setIndicator("speakon_sel.val", "posts_sel.val", amp_control.output);
+    setIndicator("posts_sel.val", "speakon_sel.val", amp_control.output);
 }
 
 // init fan page
 void trigger8() {
     nexDisplay.writeNum("fan_gauge.val", map(amp_control.fanDutyCycle, 0, 255, 0, 180));
+    nexDisplay.writeNum("fan_spd_ctrl.val", map(amp_control.fanDutyCycle, 0, 255, 0, 100));
 }
 
 // init fft page
@@ -131,6 +147,17 @@ void trigger12() {
 void trigger13() {
     periodicUpdates = false;
 }
+
+// FFT L checkbox
+void trigger14() {
+    fftL = !fftL;
+}
+
+// FFT R checkbox
+void trigger15() {
+    fftR = !fftR;
+}
+
 
 void setIndicator(String indicatorID, bool indicatorVar) {
     if(indicatorVar) {
@@ -152,7 +179,9 @@ void setIndicator(String indicatorIdTrue, String indicatorIdFalse, bool indicato
     }
 }
 
-uint32_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
+// a slightly modified map() function for use with RMS levels in dB
+// This is a little bit safer since the display has hard min/max values for some objects and the normal map() function can give >max and <min values
+uint8_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint32_t out_min, uint32_t out_max) {
     uint32_t x = (uint32_t)input;
 
     if(x > in_max) {
@@ -164,4 +193,36 @@ uint32_t map_rms_to_display(float input, uint32_t in_min, uint32_t in_max, uint3
     else {
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
+}
+
+// split into roughly 1/2 octave bands: https://courses.physics.illinois.edu/phys406/sp2017/Lab_Handouts/Octave_Bands.pdf
+// draw one channel
+void drawFFT(uint8_t fftGraph[], uint16_t color) {
+    nexDisplay.writeStr("ref 0");    // refresh screen
+
+    for(int i = 0; i < NUM_BANDS - 1; i++) {
+        nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraph[i], FFT_BAND_WIDTH_PX - 1, fftGraph[i], color) );
+    }
+}
+
+// draw both channels
+void drawFFT(uint8_t fftGraphL[], uint16_t colorL, uint8_t fftGraphR[], uint16_t colorR, uint16_t colorCombined) {
+    nexDisplay.writeStr("ref 0");    // refresh screen
+
+    for(int i = 0; i < NUM_BANDS - 1; i++) {
+        if(fftGraphL[i] > fftGraphR[i]) {
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphL[i], FFT_BAND_WIDTH_PX - 1, fftGraphL[i]-fftGraphR[i], colorL) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphR[i], FFT_BAND_WIDTH_PX - 1, fftGraphR[i], colorCombined) );
+        }
+        else {
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphR[i], FFT_BAND_WIDTH_PX - 1, fftGraphR[i]-fftGraphL[i], colorR) );
+            nexDisplay.writeStr( fillRectCmd(FFT_START_X_COORD + i * FFT_BAND_WIDTH_PX, 250-fftGraphL[i], FFT_BAND_WIDTH_PX - 1, fftGraphL[i], colorCombined) );
+        }
+    }
+}
+
+// Create the command to draw a filled rectangle
+String fillRectCmd(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color) {
+    // "fill x,y,w,h,color"
+    return "fill " + String(x) + "," + String(y) + "," + String(w) + "," + String(h) + "," + String(color);
 }
