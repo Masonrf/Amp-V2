@@ -43,9 +43,9 @@ AmpADC::AmpADC() {
     arm_rfft_fast_init_f32(&f32_instance0, BUFF_SIZE);
     arm_rfft_fast_init_f32(&f32_instance1, BUFF_SIZE);
 
-    // Initialize AWF
-    arm_biquad_cascade_df2T_init_f32(&AWF_filtInst0, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state0);
-    arm_biquad_cascade_df2T_init_f32(&AWF_filtInst1, AWF_IIR_NUM_STAGES, AWF_biquad_coeffs, AWF_biquad_state1);
+    // Initialize WF
+    arm_biquad_cascade_df2T_init_f32(&WF_filtInst0, WF_IIR_NUM_STAGES, WF_biquad_coeffs, WF_biquad_state0);
+    arm_biquad_cascade_df2T_init_f32(&WF_filtInst1, WF_IIR_NUM_STAGES, WF_biquad_coeffs, WF_biquad_state1);
 
 }
 
@@ -72,11 +72,11 @@ void AmpADC::adc_task(int currentPage) {
         case MAIN_PAGE:
             // A-weighting
             for(int i = 0; i < BUFF_SIZE; i++) {
-                workBuffer0[i] *= AWF_biquad_scale[0];  // scale the input value
-                workBuffer1[i] *= AWF_biquad_scale[0];
+                workBuffer0[i] *= WF_biquad_scale[0];  // scale the input value
+                workBuffer1[i] *= WF_biquad_scale[0];
             }
-            arm_biquad_cascade_df2T_f32(&AWF_filtInst0, workBuffer0, workBuffer2, BUFF_SIZE);
-            arm_biquad_cascade_df2T_f32(&AWF_filtInst1, workBuffer1, workBuffer3, BUFF_SIZE);
+            arm_biquad_cascade_df2T_f32(&WF_filtInst0, workBuffer0, workBuffer2, BUFF_SIZE);
+            arm_biquad_cascade_df2T_f32(&WF_filtInst1, workBuffer1, workBuffer3, BUFF_SIZE);
 
             // Get RMS values in dB
             arm_rms_f32(workBuffer2, BUFF_SIZE, &rmsL);
