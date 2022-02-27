@@ -37,6 +37,8 @@
 // Do not change theses values unless you plan to redo all the FFT display boxes. It's not tolerant to changes in any of these values  currently
 #define BUFF_SIZE     1024  // Power of 2 up to 2^16 <- On a Teensy 4, you'll run out of memory much earlier
 
+// 'A' or 'C'
+#define WEIGHTING_TYPE  'C'
 #define SAMPLE_RATE   44100
 // this needs to be included after SAMPLE_RATE because of the if preprocessor statements
 #include "Filter.h"
@@ -63,8 +65,8 @@ private:
     void copy_from_dma_buff_to_dsp_buff(volatile uint16_t *dmaBuff, volatile uint16_t *end_dmaBuff, float32_t *dspBuff, float32_t offset);
     float32_t workBuffer0[BUFF_SIZE], workBuffer1[BUFF_SIZE], workBuffer2[BUFF_SIZE], workBuffer3[BUFF_SIZE];
 
-    // A-Weighting Filter (AWF) 
-    arm_biquad_cascade_df2T_instance_f32 AWF_filtInst0, AWF_filtInst1;
+    // Weighting Filter (WF) 
+    arm_biquad_cascade_df2T_instance_f32 WF_filtInst0, WF_filtInst1;
 
     // Window types. Google these if you have questions or want to add more.
     float32_t window[BUFF_SIZE];
